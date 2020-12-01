@@ -11,12 +11,11 @@ import os.path
 import re
 import sys
 
-from coverage import env
-from coverage.backward import binary_bytes
-from coverage.execfile import run_python_file, run_python_module
-from coverage.files import python_reported_file
-from coverage.misc import NoCode, NoSource
-
+from coverage5 import env
+from coverage5.backward import binary_bytes
+from coverage5.execfile import run_python_file, run_python_module
+from coverage5.files import python_reported_file
+from coverage5.misc import NoCode, NoSource
 from tests.coveragetest import CoverageTest, TESTS_DIR, UsingModulesMixin
 
 TRY_EXECFILE = os.path.join(TESTS_DIR, "modules/process_test/try_execfile.py")
@@ -30,33 +29,37 @@ class RunFileTest(CoverageTest):
         mod_globs = json.loads(self.stdout())
 
         # The file should think it is __main__
-        self.assertEqual(mod_globs['__name__'], "__main__")
+        self.assertEqual(mod_globs["__name__"], "__main__")
 
         # It should seem to come from a file named try_execfile.py
-        dunder_file = os.path.basename(mod_globs['__file__'])
+        dunder_file = os.path.basename(mod_globs["__file__"])
         self.assertEqual(dunder_file, "try_execfile.py")
 
         # It should have its correct module data.
-        self.assertEqual(mod_globs['__doc__'].splitlines()[0],
-                            "Test file for run_python_file.")
-        self.assertEqual(mod_globs['DATA'], "xyzzy")
-        self.assertEqual(mod_globs['FN_VAL'], "my_fn('fooey')")
+        self.assertEqual(
+            mod_globs["__doc__"].splitlines()[0], "Test file for run_python_file."
+        )
+        self.assertEqual(mod_globs["DATA"], "xyzzy")
+        self.assertEqual(mod_globs["FN_VAL"], "my_fn('fooey')")
 
         # It must be self-importable as __main__.
-        self.assertEqual(mod_globs['__main__.DATA'], "xyzzy")
+        self.assertEqual(mod_globs["__main__.DATA"], "xyzzy")
 
         # Argv should have the proper values.
-        self.assertEqual(mod_globs['argv0'], TRY_EXECFILE)
-        self.assertEqual(mod_globs['argv1-n'], ["arg1", "arg2"])
+        self.assertEqual(mod_globs["argv0"], TRY_EXECFILE)
+        self.assertEqual(mod_globs["argv1-n"], ["arg1", "arg2"])
 
         # __builtins__ should have the right values, like open().
-        self.assertEqual(mod_globs['__builtins__.has_open'], True)
+        self.assertEqual(mod_globs["__builtins__.has_open"], True)
 
     def test_no_extra_file(self):
         # Make sure that running a file doesn't create an extra compiled file.
-        self.make_file("xxx", """\
+        self.make_file(
+            "xxx",
+            """\
             desc = "a non-.py file!"
-            """)
+            """,
+        )
 
         self.assertEqual(os.listdir("."), ["xxx"])
         run_python_file(["xxx"])
@@ -64,59 +67,70 @@ class RunFileTest(CoverageTest):
 
     def test_universal_newlines(self):
         # Make sure we can read any sort of line ending.
-        pylines = """# try newlines|print('Hello, world!')|""".split('|')
-        for nl in ('\n', '\r\n', '\r'):
-            with open('nl.py', 'wb') as fpy:
-                fpy.write(nl.join(pylines).encode('utf-8'))
-            run_python_file(['nl.py'])
-        self.assertEqual(self.stdout(), "Hello, world!\n"*3)
+        pylines = """# try newlines|print('Hello, world!')|""".split("|")
+        for nl in ("\n", "\r\n", "\r"):
+            with open("nl.py", "wb") as fpy:
+                fpy.write(nl.join(pylines).encode("utf-8"))
+            run_python_file(["nl.py"])
+        self.assertEqual(self.stdout(), "Hello, world!\n" * 3)
 
     def test_missing_final_newline(self):
         # Make sure we can deal with a Python file with no final newline.
-        self.make_file("abrupt.py", """\
+        self.make_file(
+            "abrupt.py",
+            """\
             if 1:
                 a = 1
                 print("a is %r" % a)
-                #""")
+                #""",
+        )
         with open("abrupt.py") as f:
             abrupt = f.read()
-        self.assertEqual(abrupt[-1], '#')
+        self.assertEqual(abrupt[-1], "#")
         run_python_file(["abrupt.py"])
         self.assertEqual(self.stdout(), "a is 1\n")
 
     def test_no_such_file(self):
-        path = python_reported_file('xyzzy.py')
+        path = python_reported_file("xyzzy.py")
         msg = re.escape("No file to run: '{}'".format(path))
         with self.assertRaisesRegex(NoSource, msg):
             run_python_file(["xyzzy.py"])
 
     def test_directory_with_main(self):
-        self.make_file("with_main/__main__.py", """\
+        self.make_file(
+            "with_main/__main__.py",
+            """\
             print("I am __main__")
-            """)
+            """,
+        )
         run_python_file(["with_main"])
         self.assertEqual(self.stdout(), "I am __main__\n")
 
     def test_directory_without_main(self):
         self.make_file("without_main/__init__.py", "")
-        with self.assertRaisesRegex(NoSource, "Can't find '__main__' module in 'without_main'"):
+        with self.assertRaisesRegex(
+            NoSource, "Can't find '__main__' module in 'without_main'"
+        ):
             run_python_file(["without_main"])
 
 
 class RunPycFileTest(CoverageTest):
     """Test cases for `run_python_file`."""
 
-    def make_pyc(self):                     # pylint: disable=inconsistent-return-statements
+    def make_pyc(self):  # pylint: disable=inconsistent-return-statements
         """Create a .pyc file, and return the path to it."""
         if env.JYTHON:
             self.skipTest("Can't make .pyc files on Jython")
 
-        self.make_file("compiled.py", """\
+        self.make_file(
+            "compiled.py",
+            """\
             def doit():
                 print("I am here!")
 
             doit()
-            """)
+            """,
+        )
         compileall.compile_dir(".", quiet=True)
         os.remove("compiled.py")
 
@@ -125,8 +139,8 @@ class RunPycFileTest(CoverageTest):
         prefix = getattr(sys, "pycache_prefix", None)
         if prefix:
             roots.append(prefix)
-        for root in roots:                              # pragma: part covered
-            for there, _, files in os.walk(root):       # pragma: part covered
+        for root in roots:  # pragma: part covered
+            for there, _, files in os.walk(root):  # pragma: part covered
                 for fname in files:
                     if fnmatch.fnmatch(fname, "compiled*.pyc"):
                         return os.path.join(there, fname)
@@ -150,7 +164,7 @@ class RunPycFileTest(CoverageTest):
         # Jam Python 2.1 magic number into the .pyc file.
         with open(pycfile, "r+b") as fpyc:
             fpyc.seek(0)
-            fpyc.write(binary_bytes([0x2a, 0xeb, 0x0d, 0x0a]))
+            fpyc.write(binary_bytes([0x2A, 0xEB, 0x0D, 0x0A]))
 
         with self.assertRaisesRegex(NoCode, "Bad magic number in .pyc file"):
             run_python_file([pycfile])
@@ -159,7 +173,7 @@ class RunPycFileTest(CoverageTest):
         os.remove(pycfile)
 
     def test_no_such_pyc_file(self):
-        path = python_reported_file('xyzzy.pyc')
+        path = python_reported_file("xyzzy.pyc")
         msg = re.escape("No file to run: '{}'".format(path))
         with self.assertRaisesRegex(NoCode, msg):
             run_python_file(["xyzzy.pyc"])
@@ -169,16 +183,16 @@ class RunPycFileTest(CoverageTest):
         # be able to write binary files.
         bf = self.make_file("binary")
         with open(bf, "wb") as f:
-            f.write(b'\x7fELF\x02\x01\x01\x00\x00\x00')
+            f.write(b"\x7fELF\x02\x01\x01\x00\x00\x00")
 
-        path = python_reported_file('binary')
+        path = python_reported_file("binary")
         msg = (
-            re.escape("Couldn't run '{}' as Python code: ".format(path)) +
-            r"(TypeError|ValueError): "
+            re.escape("Couldn't run '{}' as Python code: ".format(path))
+            + r"(TypeError|ValueError): "
             r"("
-            r"compile\(\) expected string without null bytes"    # for py2
+            r"compile\(\) expected string without null bytes"  # for py2
             r"|"
-            r"source code string cannot contain null bytes"     # for py3
+            r"source code string cannot contain null bytes"  # for py3
             r")"
         )
         with self.assertRaisesRegex(Exception, msg):
@@ -208,17 +222,23 @@ class RunModuleTest(UsingModulesMixin, CoverageTest):
     def test_pkg1_main(self):
         run_python_module(["pkg1", "hello"])
         self.assertEqual(self.stderr(), "")
-        self.assertEqual(self.stdout(), "pkg1.__init__: pkg1\npkg1.__main__: passed hello\n")
+        self.assertEqual(
+            self.stdout(), "pkg1.__init__: pkg1\npkg1.__main__: passed hello\n"
+        )
 
     def test_pkg1_sub_main(self):
         run_python_module(["pkg1.sub", "hello"])
         self.assertEqual(self.stderr(), "")
-        self.assertEqual(self.stdout(), "pkg1.__init__: pkg1\npkg1.sub.__main__: passed hello\n")
+        self.assertEqual(
+            self.stdout(), "pkg1.__init__: pkg1\npkg1.sub.__main__: passed hello\n"
+        )
 
     def test_pkg1_init(self):
         run_python_module(["pkg1.__init__", "wut?"])
         self.assertEqual(self.stderr(), "")
-        self.assertEqual(self.stdout(), "pkg1.__init__: pkg1\npkg1.__init__: __main__\n")
+        self.assertEqual(
+            self.stdout(), "pkg1.__init__: pkg1\npkg1.__init__: __main__\n"
+        )
 
     def test_no_such_module(self):
         with self.assertRaisesRegex(NoSource, "No module named '?i_dont_exist'?"):

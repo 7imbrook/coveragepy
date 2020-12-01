@@ -1,13 +1,13 @@
 """Generate random Python for testing."""
 
 import collections
-from itertools import cycle, product
 import random
 import re
 import sys
+from itertools import cycle, product
 
-import coverage
-from coverage.parser import PythonParser
+import coverage5 as coverage
+from coverage5.parser import PythonParser
 
 
 class PythonSpinner(object):
@@ -30,7 +30,7 @@ class PythonSpinner(object):
 
     def add_line(self, line):
         g = "g{}".format(self.lineno)
-        self.lines.append(' ' * self.indent + line.format(g=g, lineno=self.lineno))
+        self.lines.append(" " * self.indent + line.format(g=g, lineno=self.lineno))
 
     def add_block(self, node):
         self.indent += 4
@@ -116,11 +116,64 @@ class RandomAstMaker(object):
         return weighted_choice(self.r, choices)
 
     STMT_CHOICES = [
-        [("if", 10), ("for", 10), ("try", 10), ("while", 3), ("with", 10), ("assign", 20), ("return", 1), ("yield", 0)],
-        [("if", 10), ("for", 10), ("try", 10), ("while", 3), ("with", 10), ("assign", 40), ("return", 1), ("yield", 0), ("break", 10), ("continue", 10)],
-        [("if", 10), ("for", 10), ("try", 10), ("while", 3), ("with", 10), ("assign", 40), ("return", 1), ("yield", 0), ("break", 10), ("continue", 10)],
-        [("if", 10), ("for", 10), ("try", 10), ("while", 3), ("with", 10), ("assign", 40), ("return", 1), ("yield", 0), ("break", 10), ("continue", 10)],
-        [("if", 10), ("for", 10), ("try", 10), ("while", 3), ("with", 10), ("assign", 40), ("return", 1), ("yield", 0), ("break", 10), ("continue", 10)],
+        [
+            ("if", 10),
+            ("for", 10),
+            ("try", 10),
+            ("while", 3),
+            ("with", 10),
+            ("assign", 20),
+            ("return", 1),
+            ("yield", 0),
+        ],
+        [
+            ("if", 10),
+            ("for", 10),
+            ("try", 10),
+            ("while", 3),
+            ("with", 10),
+            ("assign", 40),
+            ("return", 1),
+            ("yield", 0),
+            ("break", 10),
+            ("continue", 10),
+        ],
+        [
+            ("if", 10),
+            ("for", 10),
+            ("try", 10),
+            ("while", 3),
+            ("with", 10),
+            ("assign", 40),
+            ("return", 1),
+            ("yield", 0),
+            ("break", 10),
+            ("continue", 10),
+        ],
+        [
+            ("if", 10),
+            ("for", 10),
+            ("try", 10),
+            ("while", 3),
+            ("with", 10),
+            ("assign", 40),
+            ("return", 1),
+            ("yield", 0),
+            ("break", 10),
+            ("continue", 10),
+        ],
+        [
+            ("if", 10),
+            ("for", 10),
+            ("try", 10),
+            ("while", 3),
+            ("with", 10),
+            ("assign", 40),
+            ("return", 1),
+            ("yield", 0),
+            ("break", 10),
+            ("continue", 10),
+        ],
         # Last element has to have no compound statements, to limit depth.
         [("assign", 10), ("return", 1), ("yield", 0), ("break", 10), ("continue", 10)],
     ]
@@ -165,11 +218,19 @@ class RandomAstMaker(object):
                     with_exceptions = self.roll()
                 if with_exceptions:
                     num_exceptions = self.choose([(1, 50), (2, 50)])
-                    exceptions = [self.make_body("except") for _ in range(num_exceptions)]
+                    exceptions = [
+                        self.make_body("except") for _ in range(num_exceptions)
+                    ]
                 else:
                     exceptions = None
                 body.append(
-                    ["try", self.make_body("tryelse"), exceptions, else_clause, finally_clause]
+                    [
+                        "try",
+                        self.make_body("tryelse"),
+                        exceptions,
+                        else_clause,
+                        finally_clause,
+                    ]
                 )
             elif stmt == "with":
                 body.append(["with", self.make_body("with")])
@@ -202,13 +263,13 @@ class RandomAstMaker(object):
 def async_alternatives(source):
     parts = re.split(r"(for |with )", source)
     nchoices = len(parts) // 2
-    #print("{} choices".format(nchoices))
+    # print("{} choices".format(nchoices))
 
     def constant(s):
         return [s]
 
     def maybe_async(s):
-        return [s, "async "+s]
+        return [s, "async " + s]
 
     choices = [f(x) for f, x in zip(cycle([constant, maybe_async]), parts)]
     for result in product(*choices):
@@ -232,7 +293,7 @@ def show_a_bunch():
         maker = RandomAstMaker(i)
         source = PythonSpinner.generate_python(maker.make_body("def"))
         try:
-            print("-"*80, "\n", source, sep="")
+            print("-" * 80, "\n", source, sep="")
             compile(source, "<string>", "exec")
         except Exception as ex:
             print("Oops: {}\n{}".format(ex, source))
@@ -248,9 +309,10 @@ def show_alternatives():
         if nlines < 15:
             nalt = compare_alternatives(source)
             if nalt > 1:
-                print("--- {:3} lines, {:2} alternatives ---------".format(nlines, nalt))
+                print(
+                    "--- {:3} lines, {:2} alternatives ---------".format(nlines, nalt)
+                )
                 print(source)
-
 
 
 def show_one():
@@ -258,6 +320,7 @@ def show_one():
     source = PythonSpinner.generate_python(maker.make_body("def"))
     print(source)
 
+
 if __name__ == "__main__":
     show_one()
-    #show_alternatives()
+    # show_alternatives()

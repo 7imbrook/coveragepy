@@ -5,14 +5,18 @@
 
 import os
 
+import coverage5 as coverage
 import pytest
-
-import coverage
-from coverage.backward import StringIO
-from coverage.debug import filter_text, info_formatter, info_header, short_id, short_stack
-from coverage.debug import clipped_repr
-from coverage.env import C_TRACER
-
+from coverage5.backward import StringIO
+from coverage5.debug import clipped_repr
+from coverage5.debug import (
+    filter_text,
+    info_formatter,
+    info_header,
+    short_id,
+    short_stack,
+)
+from coverage5.env import C_TRACER
 from tests.coveragetest import CoverageTest
 from tests.helpers import re_line, re_lines
 
@@ -23,70 +27,93 @@ class InfoFormatterTest(CoverageTest):
     run_in_temp_dir = False
 
     def test_info_formatter(self):
-        lines = list(info_formatter([
-            ('x', 'hello there'),
-            ('very long label', ['one element']),
-            ('regular', ['abc', 'def', 'ghi', 'jkl']),
-            ('nothing', []),
-        ]))
+        lines = list(
+            info_formatter(
+                [
+                    ("x", "hello there"),
+                    ("very long label", ["one element"]),
+                    ("regular", ["abc", "def", "ghi", "jkl"]),
+                    ("nothing", []),
+                ]
+            )
+        )
         expected = [
-            '                             x: hello there',
-            '               very long label: one element',
-            '                       regular: abc',
-            '                                def',
-            '                                ghi',
-            '                                jkl',
-            '                       nothing: -none-',
+            "                             x: hello there",
+            "               very long label: one element",
+            "                       regular: abc",
+            "                                def",
+            "                                ghi",
+            "                                jkl",
+            "                       nothing: -none-",
         ]
         self.assertEqual(expected, lines)
 
     def test_info_formatter_with_generator(self):
-        lines = list(info_formatter(('info%d' % i, i) for i in range(3)))
+        lines = list(info_formatter(("info%d" % i, i) for i in range(3)))
         expected = [
-            '                         info0: 0',
-            '                         info1: 1',
-            '                         info2: 2',
+            "                         info0: 0",
+            "                         info1: 1",
+            "                         info2: 2",
         ]
         self.assertEqual(expected, lines)
 
     def test_too_long_label(self):
         with self.assertRaises(AssertionError):
-            list(info_formatter([('this label is way too long and will not fit', 23)]))
+            list(info_formatter([("this label is way too long and will not fit", 23)]))
 
 
-@pytest.mark.parametrize("label, header", [
-    ("x",               "-- x ---------------------------------------------------------"),
-    ("hello there",     "-- hello there -----------------------------------------------"),
-])
+@pytest.mark.parametrize(
+    "label, header",
+    [
+        ("x", "-- x ---------------------------------------------------------"),
+        (
+            "hello there",
+            "-- hello there -----------------------------------------------",
+        ),
+    ],
+)
 def test_info_header(label, header):
     assert info_header(label) == header
 
 
-@pytest.mark.parametrize("id64, id16", [
-    (0x1234, 0x1234),
-    (0x12340000, 0x1234),
-    (0xA5A55A5A, 0xFFFF),
-    (0x1234cba956780fed, 0x8008),
-])
+@pytest.mark.parametrize(
+    "id64, id16",
+    [
+        (0x1234, 0x1234),
+        (0x12340000, 0x1234),
+        (0xA5A55A5A, 0xFFFF),
+        (0x1234CBA956780FED, 0x8008),
+    ],
+)
 def test_short_id(id64, id16):
     assert short_id(id64) == id16
 
 
-@pytest.mark.parametrize("text, numchars, result", [
-    ("hello", 10, "'hello'"),
-    ("0123456789abcdefghijklmnopqrstuvwxyz", 15, "'01234...vwxyz'"),
-])
+@pytest.mark.parametrize(
+    "text, numchars, result",
+    [
+        ("hello", 10, "'hello'"),
+        ("0123456789abcdefghijklmnopqrstuvwxyz", 15, "'01234...vwxyz'"),
+    ],
+)
 def test_clipped_repr(text, numchars, result):
     assert clipped_repr(text, numchars) == result
 
 
-@pytest.mark.parametrize("text, filters, result", [
-    ("hello", [], "hello"),
-    ("hello\n", [], "hello\n"),
-    ("hello\nhello\n", [], "hello\nhello\n"),
-    ("hello\nbye\n", [lambda x: "="+x], "=hello\n=bye\n"),
-    ("hello\nbye\n", [lambda x: "="+x, lambda x: x+"\ndone\n"], "=hello\ndone\n=bye\ndone\n"),
-])
+@pytest.mark.parametrize(
+    "text, filters, result",
+    [
+        ("hello", [], "hello"),
+        ("hello\n", [], "hello\n"),
+        ("hello\nhello\n", [], "hello\nhello\n"),
+        ("hello\nbye\n", [lambda x: "=" + x], "=hello\n=bye\n"),
+        (
+            "hello\nbye\n",
+            [lambda x: "=" + x, lambda x: x + "\ndone\n"],
+            "=hello\ndone\n=bye\ndone\n",
+        ),
+    ],
+)
 def test_filter_text(text, filters, result):
     assert filter_text(text, filters) == result
 
@@ -97,13 +124,16 @@ class DebugTraceTest(CoverageTest):
     def f1_debug_output(self, debug):
         """Runs some code with `debug` option, returns the debug output."""
         # Make code to run.
-        self.make_file("f1.py", """\
+        self.make_file(
+            "f1.py",
+            """\
             def f1(x):
                 return x+1
 
             for i in range(5):
                 f1(i)
-            """)
+            """,
+        )
 
         debug_out = StringIO()
         cov = coverage.Coverage(debug=debug)
@@ -128,9 +158,8 @@ class DebugTraceTest(CoverageTest):
 
         # We should have lines like "Not tracing 'collector.py'..."
         coverage_lines = re_lines(
-            out_lines,
-            r"^Not tracing .*: is part of coverage.py$"
-            )
+            out_lines, r"^Not tracing .*: is part of coverage.py$"
+        )
         self.assertTrue(coverage_lines)
 
     def test_debug_trace_pid(self):
@@ -160,8 +189,12 @@ class DebugTraceTest(CoverageTest):
         # The details of what to expect on the stack are empirical, and can change
         # as the code changes. This test is here to ensure that the debug code
         # continues working. It's ok to adjust these details over time.
-        self.assertRegex(real_messages[-1], r"^\s*\d+\.\w{4}: Adding file tracers: 0 files")
-        self.assertRegex(last_line, r"\s+add_file_tracers : .*coverage[/\\]sqldata.py:\d+$")
+        self.assertRegex(
+            real_messages[-1], r"^\s*\d+\.\w{4}: Adding file tracers: 0 files"
+        )
+        self.assertRegex(
+            last_line, r"\s+add_file_tracers : .*coverage[/\\]sqldata.py:\d+$"
+        )
 
     def test_debug_config(self):
         out_lines = self.f1_debug_output(["config"])
@@ -211,9 +244,11 @@ def f_one(*args, **kwargs):
     """First of the chain of functions for testing `short_stack`."""
     return f_two(*args, **kwargs)
 
+
 def f_two(*args, **kwargs):
     """Second of the chain of functions for testing `short_stack`."""
     return f_three(*args, **kwargs)
+
 
 def f_three(*args, **kwargs):
     """Third of the chain of functions for testing `short_stack`."""

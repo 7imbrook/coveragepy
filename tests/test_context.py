@@ -6,11 +6,10 @@
 import inspect
 import os.path
 
-import coverage
-from coverage import env
-from coverage.context import qualname_from_frame
-from coverage.data import CoverageData
-
+import coverage5 as coverage
+from coverage5 import env
+from coverage5.context import qualname_from_frame
+from coverage5.data import CoverageData
 from tests.coveragetest import CoverageTest
 
 
@@ -44,13 +43,17 @@ class StaticContextTest(CoverageTest):
     def run_red_blue(self, **options):
         """Run red.py and blue.py, and return their CoverageData objects."""
         self.make_file("red.py", self.SOURCE)
-        red_cov = coverage.Coverage(context="red", data_suffix="r", source=["."], **options)
+        red_cov = coverage.Coverage(
+            context="red", data_suffix="r", source=["."], **options
+        )
         self.start_import_stop(red_cov, "red")
         red_cov.save()
         red_data = red_cov.get_data()
 
         self.make_file("blue.py", self.SOURCE)
-        blue_cov = coverage.Coverage(context="blue", data_suffix="b", source=["."], **options)
+        blue_cov = coverage.Coverage(
+            context="blue", data_suffix="b", source=["."], **options
+        )
         self.start_import_stop(blue_cov, "blue")
         blue_cov.save()
         blue_data = blue_cov.get_data()
@@ -64,23 +67,23 @@ class StaticContextTest(CoverageTest):
             for data in datas:
                 combined.update(data)
 
-            self.assertEqual(combined.measured_contexts(), {'red', 'blue'})
+            self.assertEqual(combined.measured_contexts(), {"red", "blue"})
 
             full_names = {os.path.basename(f): f for f in combined.measured_files()}
-            self.assertCountEqual(full_names, ['red.py', 'blue.py'])
+            self.assertCountEqual(full_names, ["red.py", "blue.py"])
 
-            fred = full_names['red.py']
-            fblue = full_names['blue.py']
+            fred = full_names["red.py"]
+            fblue = full_names["blue.py"]
 
             def assert_combined_lines(filename, context, lines):
                 # pylint: disable=cell-var-from-loop
                 combined.set_query_context(context)
                 self.assertEqual(combined.lines(filename), lines)
 
-            assert_combined_lines(fred, 'red', self.LINES)
-            assert_combined_lines(fred, 'blue', [])
-            assert_combined_lines(fblue, 'red', [])
-            assert_combined_lines(fblue, 'blue', self.LINES)
+            assert_combined_lines(fred, "red", self.LINES)
+            assert_combined_lines(fred, "blue", [])
+            assert_combined_lines(fblue, "red", [])
+            assert_combined_lines(fblue, "blue", self.LINES)
 
     def test_combining_arc_contexts(self):
         red_data, blue_data = self.run_red_blue(branch=True)
@@ -89,33 +92,33 @@ class StaticContextTest(CoverageTest):
             for data in datas:
                 combined.update(data)
 
-            self.assertEqual(combined.measured_contexts(), {'red', 'blue'})
+            self.assertEqual(combined.measured_contexts(), {"red", "blue"})
 
             full_names = {os.path.basename(f): f for f in combined.measured_files()}
-            self.assertCountEqual(full_names, ['red.py', 'blue.py'])
+            self.assertCountEqual(full_names, ["red.py", "blue.py"])
 
-            fred = full_names['red.py']
-            fblue = full_names['blue.py']
+            fred = full_names["red.py"]
+            fblue = full_names["blue.py"]
 
             def assert_combined_lines(filename, context, lines):
                 # pylint: disable=cell-var-from-loop
                 combined.set_query_context(context)
                 self.assertEqual(combined.lines(filename), lines)
 
-            assert_combined_lines(fred, 'red', self.LINES)
-            assert_combined_lines(fred, 'blue', [])
-            assert_combined_lines(fblue, 'red', [])
-            assert_combined_lines(fblue, 'blue', self.LINES)
+            assert_combined_lines(fred, "red", self.LINES)
+            assert_combined_lines(fred, "blue", [])
+            assert_combined_lines(fblue, "red", [])
+            assert_combined_lines(fblue, "blue", self.LINES)
 
             def assert_combined_arcs(filename, context, lines):
                 # pylint: disable=cell-var-from-loop
                 combined.set_query_context(context)
                 self.assertEqual(combined.arcs(filename), lines)
 
-            assert_combined_arcs(fred, 'red', self.ARCS)
-            assert_combined_arcs(fred, 'blue', [])
-            assert_combined_arcs(fblue, 'red', [])
-            assert_combined_arcs(fblue, 'blue', self.ARCS)
+            assert_combined_arcs(fred, "red", self.ARCS)
+            assert_combined_arcs(fred, "blue", [])
+            assert_combined_arcs(fblue, "red", [])
+            assert_combined_arcs(fblue, "blue", self.ARCS)
 
 
 class DynamicContextTest(CoverageTest):
@@ -158,8 +161,8 @@ class DynamicContextTest(CoverageTest):
         full_names = {os.path.basename(f): f for f in data.measured_files()}
         fname = full_names["two_tests.py"]
         self.assertCountEqual(
-            data.measured_contexts(),
-            ["", "two_tests.test_one", "two_tests.test_two"])
+            data.measured_contexts(), ["", "two_tests.test_one", "two_tests.test_two"]
+        )
 
         def assert_context_lines(context, lines):
             data.set_query_context(context)
@@ -180,7 +183,8 @@ class DynamicContextTest(CoverageTest):
         fname = full_names["two_tests.py"]
         self.assertCountEqual(
             data.measured_contexts(),
-            ["stat", "stat|two_tests.test_one", "stat|two_tests.test_two"])
+            ["stat", "stat|two_tests.test_one", "stat|two_tests.test_two"],
+        )
 
         def assert_context_lines(context, lines):
             data.set_query_context(context)
@@ -201,7 +205,9 @@ def get_qualname():
     caller_frame = stack[0][0]
     return qualname_from_frame(caller_frame)
 
+
 # pylint: disable=missing-class-docstring, missing-function-docstring, unused-argument
+
 
 class Parent(object):
     def meth(self):
@@ -211,33 +217,43 @@ class Parent(object):
     def a_property(self):
         return get_qualname()
 
+
 class Child(Parent):
     pass
+
 
 class SomethingElse(object):
     pass
 
+
 class MultiChild(SomethingElse, Child):
     pass
+
 
 def no_arguments():
     return get_qualname()
 
+
 def plain_old_function(a, b):
     return get_qualname()
+
 
 def fake_out(self):
     return get_qualname()
 
+
 def patch_meth(self):
     return get_qualname()
+
 
 class OldStyle:
     def meth(self):
         return get_qualname()
 
+
 class OldChild(OldStyle):
     pass
+
 
 # pylint: enable=missing-class-docstring, missing-function-docstring, unused-argument
 
@@ -264,14 +280,14 @@ class QualnameTest(CoverageTest):
 
     def test_plain_old_function(self):
         self.assertEqual(
-            plain_old_function(0, 1), "tests.test_context.plain_old_function")
+            plain_old_function(0, 1), "tests.test_context.plain_old_function"
+        )
 
     def test_fake_out(self):
         self.assertEqual(fake_out(0), "tests.test_context.fake_out")
 
     def test_property(self):
-        self.assertEqual(
-            Parent().a_property, "tests.test_context.Parent.a_property")
+        self.assertEqual(Parent().a_property, "tests.test_context.Parent.a_property")
 
     def test_changeling(self):
         c = Child()
@@ -286,5 +302,5 @@ class QualnameTest(CoverageTest):
 
     def test_bug_829(self):
         # A class with a name like a function shouldn't confuse qualname_from_frame.
-        class test_something(object):               # pylint: disable=unused-variable
+        class test_something(object):  # pylint: disable=unused-variable
             self.assertEqual(get_qualname(), None)

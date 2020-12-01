@@ -15,21 +15,21 @@ import shlex
 import sys
 import types
 
+import coverage5 as coverage
 import pytest
-from unittest_mixins import (
-    EnvironmentAwareMixin, StdStreamCapturingMixin, TempDirMixin,
-    DelayedAssertionMixin,
-)
-
-import coverage
-from coverage import env
-from coverage.backunittest import TestCase, unittest
-from coverage.backward import StringIO, import_local_file, string_class, shlex_quote
-from coverage.cmdline import CoverageScript
-from coverage.misc import StopEverything
-
+from coverage5 import env
+from coverage5.backunittest import TestCase, unittest
+from coverage5.backward import StringIO, import_local_file, string_class, shlex_quote
+from coverage5.cmdline import CoverageScript
+from coverage5.misc import StopEverything
 from tests.helpers import arcs_to_arcz_repr, arcz_to_arcs
 from tests.helpers import run_command, SuperModuleCleaner
+from unittest_mixins import (
+    EnvironmentAwareMixin,
+    StdStreamCapturingMixin,
+    TempDirMixin,
+    DelayedAssertionMixin,
+)
 
 
 # Status returns for the command line.
@@ -41,6 +41,7 @@ TESTS_DIR = os.path.dirname(__file__)
 
 def convert_skip_exceptions(method):
     """A decorator for test methods to convert StopEverything to SkipTest."""
+
     @functools.wraps(method)
     def _wrapper(*args, **kwargs):
         try:
@@ -48,20 +49,25 @@ def convert_skip_exceptions(method):
         except StopEverything:
             raise unittest.SkipTest("StopEverything!")
         return result
+
     return _wrapper
 
 
 class SkipConvertingMetaclass(type):
     """Decorate all test methods to convert StopEverything to SkipTest."""
+
     def __new__(cls, name, bases, attrs):
         for attr_name, attr_value in attrs.items():
-            if attr_name.startswith('test_') and isinstance(attr_value, types.FunctionType):
+            if attr_name.startswith("test_") and isinstance(
+                attr_value, types.FunctionType
+            ):
                 attrs[attr_name] = convert_skip_exceptions(attr_value)
 
         return super(SkipConvertingMetaclass, cls).__new__(cls, name, bases, attrs)
 
 
-CoverageTestMethodsMixin = SkipConvertingMetaclass('CoverageTestMethodsMixin', (), {})
+CoverageTestMethodsMixin = SkipConvertingMetaclass("CoverageTestMethodsMixin", (), {})
+
 
 class CoverageTest(
     EnvironmentAwareMixin,
@@ -84,8 +90,8 @@ class CoverageTest(
 
     # Temp dirs go to $TMPDIR/coverage_test/*
     temp_dir_prefix = "coverage_test/"
-    if os.getenv('COVERAGE_ENV_ID'):
-        temp_dir_prefix += "{}/".format(os.getenv('COVERAGE_ENV_ID'))
+    if os.getenv("COVERAGE_ENV_ID"):
+        temp_dir_prefix += "{}/".format(os.getenv("COVERAGE_ENV_ID"))
 
     # Keep the temp directories if the env says to.
     # $set_env.py: COVERAGE_KEEP_TMP - Keep the temp directories made by tests.
@@ -121,17 +127,17 @@ class CoverageTest(
 
         """
         cov.start()
-        try:                                    # pragma: nested
+        try:  # pragma: nested
             # Import the Python file, executing it.
             mod = import_local_file(modname, modfile)
-        finally:                                # pragma: nested
+        finally:  # pragma: nested
             # Stop coverage.py.
             cov.stop()
         return mod
 
     def get_module_name(self):
         """Return a random module name to use for this test run."""
-        self.last_module_name = 'coverage_test_' + str(random.random())[2:]
+        self.last_module_name = "coverage_test_" + str(random.random())[2:]
         return self.last_module_name
 
     def assert_equal_arcs(self, a1, a2, msg=None):
@@ -142,10 +148,19 @@ class CoverageTest(
         self.assertMultiLineEqual(s1, s2, msg)
 
     def check_coverage(
-        self, text, lines=None, missing="", report="",
-        excludes=None, partials="",
-        arcz=None, arcz_missing="", arcz_unpredicted="",
-        arcs=None, arcs_missing=None, arcs_unpredicted=None,
+        self,
+        text,
+        lines=None,
+        missing="",
+        report="",
+        excludes=None,
+        partials="",
+        arcz=None,
+        arcz_missing="",
+        arcz_unpredicted="",
+        arcs=None,
+        arcs_missing=None,
+        arcs_unpredicted=None,
     ):
         """Check the coverage measurement of `text`.
 
@@ -184,7 +199,7 @@ class CoverageTest(
         for exc in excludes or []:
             cov.exclude(exc)
         for par in partials or []:
-            cov.exclude(par, which='partial')
+            cov.exclude(par, which="partial")
 
         mod = self.start_import_stop(cov, modname)
 
@@ -216,23 +231,28 @@ class CoverageTest(
                     if missing_formatted == missing_list:
                         break
                 else:
-                    self.fail("None of the missing choices matched %r" % missing_formatted)
+                    self.fail(
+                        "None of the missing choices matched %r" % missing_formatted
+                    )
 
         if arcs is not None:
             with self.delayed_assertions():
                 self.assert_equal_arcs(
-                    arcs, analysis.arc_possibilities(),
-                    "Possible arcs differ: minus is expected, plus is actual"
+                    arcs,
+                    analysis.arc_possibilities(),
+                    "Possible arcs differ: minus is expected, plus is actual",
                 )
 
                 self.assert_equal_arcs(
-                    arcs_missing, analysis.arcs_missing(),
-                    "Missing arcs differ: minus is expected, plus is actual"
+                    arcs_missing,
+                    analysis.arcs_missing(),
+                    "Missing arcs differ: minus is expected, plus is actual",
                 )
 
                 self.assert_equal_arcs(
-                    arcs_unpredicted, analysis.arcs_unpredicted(),
-                    "Unpredicted arcs differ: minus is expected, plus is actual"
+                    arcs_unpredicted,
+                    analysis.arcs_unpredicted(),
+                    "Unpredicted arcs differ: minus is expected, plus is actual",
                 )
 
         if report:
@@ -261,7 +281,10 @@ class CoverageTest(
 
         """
         saved_warnings = []
-        def capture_warning(msg, slug=None, once=False):        # pylint: disable=unused-argument
+
+        def capture_warning(
+            msg, slug=None, once=False
+        ):  # pylint: disable=unused-argument
             """A fake implementation of Coverage._warn, to capture warnings."""
             # NOTE: we don't implement `once`.
             if slug:
@@ -273,7 +296,7 @@ class CoverageTest(
 
         try:
             yield
-        except:                     # pylint: disable=try-except-raise
+        except:  # pylint: disable=try-except-raise
             raise
         else:
             if warnings:
@@ -282,11 +305,17 @@ class CoverageTest(
                         if re.search(warning_regex, saved):
                             break
                     else:
-                        self.fail("Didn't find warning %r in %r" % (warning_regex, saved_warnings))
+                        self.fail(
+                            "Didn't find warning %r in %r"
+                            % (warning_regex, saved_warnings)
+                        )
                 for warning_regex in not_warnings:
                     for saved in saved_warnings:
                         if re.search(warning_regex, saved):
-                            self.fail("Found warning %r in %r" % (warning_regex, saved_warnings))
+                            self.fail(
+                                "Found warning %r in %r"
+                                % (warning_regex, saved_warnings)
+                            )
             else:
                 # No warnings expected. Raise if any warnings happened.
                 if saved_warnings:
@@ -352,7 +381,7 @@ class CoverageTest(
     # their new command name to the tests. This is here for them to override,
     # for example:
     # https://salsa.debian.org/debian/pkg-python-coverage/-/blob/master/debian/patches/02.rename-public-programs.patch
-    coverage_command = "coverage"
+    coverage_command = "coverage5"
 
     def run_command(self, cmd):
         """Run the command-line `cmd` in a sub-process.
@@ -383,7 +412,7 @@ class CoverageTest(
         * "python" is replaced with the command name of the current
             Python interpreter.
 
-        * "coverage" is replaced with the command name for the main
+        * "coverage5" is replaced with the command name for the main
             coverage.py program.
 
         Returns a pair: the process' exit status and its stdout/stderr text,
@@ -391,7 +420,7 @@ class CoverageTest(
         `self.last_command_output`.
 
         """
-        # Make sure "python" and "coverage" mean specifically what we want
+        # Make sure "python" and "coverage5" mean specifically what we want
         # them to mean.
         split_commandline = cmd.split()
         command_name = split_commandline[0]
@@ -405,15 +434,20 @@ class CoverageTest(
             # 2 executable instead if you don't use the executable's basename.
             command_words = [os.path.basename(sys.executable)]
 
-        elif command_name == "coverage":
-            if env.JYTHON:                  # pragma: only jython
+        elif command_name == "coverage5":
+            if env.JYTHON:  # pragma: only jython
                 # Jython can't do reporting, so let's skip the test now.
-                if command_args and command_args[0] in ('report', 'html', 'xml', 'annotate'):
+                if command_args and command_args[0] in (
+                    "report",
+                    "html",
+                    "xml",
+                    "annotate",
+                ):
                     self.skipTest("Can't run reporting commands in Jython")
-                # Jython can't run "coverage" as a command because the shebang
+                # Jython can't run "coverage5" as a command because the shebang
                 # refers to another shebang'd Python script. So run them as
                 # modules.
-                command_words = "jython -m coverage".split()
+                command_words = "jython -m coverage5".split()
             else:
                 # The invocation requests the coverage.py program.  Substitute the
                 # actual coverage.py main command name.
@@ -428,11 +462,11 @@ class CoverageTest(
         # much path munging here, but...
         pythonpath_name = "PYTHONPATH"
         if env.JYTHON:
-            pythonpath_name = "JYTHONPATH"          # pragma: only jython
+            pythonpath_name = "JYTHONPATH"  # pragma: only jython
 
-        testmods = self.nice_file(self.working_root(), 'tests/modules')
-        zipfile = self.nice_file(self.working_root(), 'tests/zipmods.zip')
-        pypath = os.getenv(pythonpath_name, '')
+        testmods = self.nice_file(self.working_root(), "tests/modules")
+        zipfile = self.nice_file(self.working_root(), "tests/zipmods.zip")
+        pypath = os.getenv(pythonpath_name, "")
         if pypath:
             pypath += os.pathsep
         pypath += testmods + os.pathsep + zipfile
@@ -448,13 +482,13 @@ class CoverageTest(
 
     def report_from_command(self, cmd):
         """Return the report from the `cmd`, with some convenience added."""
-        report = self.run_command(cmd).replace('\\', '/')
+        report = self.run_command(cmd).replace("\\", "/")
         self.assertNotIn("error", report.lower())
         return report
 
     def report_lines(self, report):
         """Return the lines of the report, as a list."""
-        lines = report.split('\n')
+        lines = report.split("\n")
         self.assertEqual(lines[-1], "")
         return lines[:-1]
 
@@ -477,8 +511,10 @@ class CoverageTest(
         Returns a dict of {filename: absolute path to file}
         for given CoverageData.
         """
-        return {os.path.basename(filename): filename
-                for filename in coverage_data.measured_files()}
+        return {
+            os.path.basename(filename): filename
+            for filename in coverage_data.measured_files()
+        }
 
 
 class UsingModulesMixin(object):
@@ -488,8 +524,8 @@ class UsingModulesMixin(object):
         super(UsingModulesMixin, self).setUp()
 
         # Parent class saves and restores sys.path, we can just modify it.
-        sys.path.append(self.nice_file(TESTS_DIR, 'modules'))
-        sys.path.append(self.nice_file(TESTS_DIR, 'moremodules'))
+        sys.path.append(self.nice_file(TESTS_DIR, "modules"))
+        sys.path.append(self.nice_file(TESTS_DIR, "moremodules"))
 
 
 def command_line(args):

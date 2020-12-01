@@ -31,8 +31,8 @@ include .readthedocs.yml
 recursive-include ci *
 exclude ci/*.token
 
-recursive-include coverage/fullcoverage *.py
-recursive-include coverage/ctracer *.c *.h
+recursive-include coverage5/fullcoverage *.py
+recursive-include coverage5/ctracer *.c *.h
 
 recursive-include doc *.py *.pip *.rst *.txt *.png
 recursive-include doc/_static *

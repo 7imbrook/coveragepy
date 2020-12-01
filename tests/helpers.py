@@ -10,11 +10,10 @@ import shutil
 import subprocess
 import sys
 
+from coverage5 import env
+from coverage5.backward import invalidate_import_caches, unicode_class
+from coverage5.misc import output_encoding
 from unittest_mixins import ModuleCleaner
-
-from coverage import env
-from coverage.backward import invalidate_import_caches, unicode_class
-from coverage.misc import output_encoding
 
 
 def run_command(cmd):
@@ -30,28 +29,30 @@ def run_command(cmd):
     # the subprocess is set incorrectly to ascii.  Use an environment variable
     # to force the encoding to be the same as ours.
     sub_env = dict(os.environ)
-    sub_env['PYTHONIOENCODING'] = output_encoding()
+    sub_env["PYTHONIOENCODING"] = output_encoding()
 
     proc = subprocess.Popen(
         cmd,
         shell=True,
         env=sub_env,
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT
-        )
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
     output, _ = proc.communicate()
     status = proc.returncode
 
     # Get the output, and canonicalize it to strings with newlines.
     if not isinstance(output, str):
         output = output.decode(output_encoding())
-    output = output.replace('\r', '')
+    output = output.replace("\r", "")
 
     return status, output
 
 
 class CheckUniqueFilenames(object):
     """Asserts the uniqueness of file names passed to a function."""
+
     def __init__(self, wrapped):
         self.filenames = set()
         self.wrapped = wrapped
@@ -74,9 +75,10 @@ class CheckUniqueFilenames(object):
 
     def wrapper(self, filename, *args, **kwargs):
         """The replacement method.  Check that we don't have dupes."""
-        assert filename not in self.filenames, (
-            "File name %r passed to %r twice" % (filename, self.wrapped)
-            )
+        assert filename not in self.filenames, "File name %r passed to %r twice" % (
+            filename,
+            self.wrapped,
+        )
         self.filenames.add(filename)
         ret = self.wrapped(filename, *args, **kwargs)
         return ret
@@ -136,11 +138,12 @@ class SuperModuleCleaner(ModuleCleaner):
 
 
 # Map chars to numbers for arcz_to_arcs
-_arcz_map = {'.': -1}
-_arcz_map.update(dict((c, ord(c) - ord('0')) for c in '123456789'))
-_arcz_map.update(dict(
-    (c, 10 + ord(c) - ord('A')) for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-))
+_arcz_map = {".": -1}
+_arcz_map.update(dict((c, ord(c) - ord("0")) for c in "123456789"))
+_arcz_map.update(
+    dict((c, 10 + ord(c) - ord("A")) for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+)
+
 
 def arcz_to_arcs(arcz):
     """Convert a compact textual representation of arcs to a list of pairs.
@@ -163,11 +166,11 @@ def arcz_to_arcs(arcz):
             a, b = pair
         else:
             assert len(pair) == 3
-            if pair[0] == '-':
+            if pair[0] == "-":
                 _, a, b = pair
                 asgn = -1
             else:
-                assert pair[1] == '-'
+                assert pair[1] == "-"
                 a, _, b = pair
                 bsgn = -1
         arcs.append((asgn * _arcz_map[a], bsgn * _arcz_map[b]))
@@ -175,6 +178,7 @@ def arcz_to_arcs(arcz):
 
 
 _arcz_unmap = {val: ch for ch, val in _arcz_map.items()}
+
 
 def _arcs_to_arcz_repr_one(num):
     """Return an arcz form of the number `num`, or "?" if there is none."""

@@ -2,10 +2,9 @@
 # Licensed under the Apache License: http://www.apache.org/licenses/LICENSE-2.0
 # For details: https://github.com/nedbat/coveragepy/blob/master/NOTICE.txt
 
-"""Tests for annotation from coverage.py."""
+"""Tests for annotation from coverage5.py."""
 
-import coverage
-
+import coverage5 as coverage
 from tests.coveragetest import CoverageTest
 from tests.goldtest import compare, gold_path
 
@@ -15,27 +14,36 @@ class AnnotationGoldTest1(CoverageTest):
 
     def make_multi(self):
         """Make a few source files we need for the tests."""
-        self.make_file("multi.py", """\
+        self.make_file(
+            "multi.py",
+            """\
             import a.a
             import b.b
 
             a.a.a(1)
             b.b.b(2)
-            """)
+            """,
+        )
         self.make_file("a/__init__.py")
-        self.make_file("a/a.py", """\
+        self.make_file(
+            "a/a.py",
+            """\
             def a(x):
                 if x == 1:
                     print("x is 1")
                 else:
                     print("x is not 1")
-            """)
+            """,
+        )
         self.make_file("b/__init__.py")
-        self.make_file("b/b.py", """\
+        self.make_file(
+            "b/b.py",
+            """\
             def b(x):
                 msg = "x is %s" % x
                 print(msg)
-            """)
+            """,
+        )
 
     def test_multi(self):
         self.make_multi()
@@ -54,19 +62,24 @@ class AnnotationGoldTest1(CoverageTest):
         compare(gold_path("annotate/anno_dir"), "out_anno_dir", "*,cover")
 
     def test_encoding(self):
-        self.make_file("utf8.py", """\
+        self.make_file(
+            "utf8.py",
+            """\
             # -*- coding: utf-8 -*-
             # This comment has an accent: é
 
             print("spam eggs")
-            """)
+            """,
+        )
         cov = coverage.Coverage()
         self.start_import_stop(cov, "utf8")
         cov.annotate()
         compare(gold_path("annotate/encodings"), ".", "*,cover")
 
     def test_white(self):
-        self.make_file("white.py", """\
+        self.make_file(
+            "white.py",
+            """\
             # A test case sent to me by Steve White
 
             def f(self):
@@ -100,7 +113,8 @@ class AnnotationGoldTest1(CoverageTest):
                     a = 2
 
             h(2)
-            """)
+            """,
+        )
 
         cov = coverage.Coverage()
         self.start_import_stop(cov, "white")

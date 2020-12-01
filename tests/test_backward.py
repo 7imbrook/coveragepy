@@ -3,16 +3,16 @@
 
 """Tests that our version shims in backward.py are working."""
 
-from coverage.backunittest import TestCase
-from coverage.backward import iitems, binary_bytes, bytes_to_ints
+from coverage5.backunittest import TestCase
+from coverage5.backward import iitems, binary_bytes, bytes_to_ints
 
 
 class BackwardTest(TestCase):
     """Tests of things from backward.py."""
 
     def test_iitems(self):
-        d = {'a': 1, 'b': 2, 'c': 3}
-        items = [('a', 1), ('b', 2), ('c', 3)]
+        d = {"a": 1, "b": 2, "c": 3}
+        items = [("a", 1), ("b", 2), ("c", 3)]
         self.assertCountEqual(list(iitems(d)), items)
 
     def test_binary_bytes(self):

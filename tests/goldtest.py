@@ -12,8 +12,7 @@ import re
 import sys
 import xml.etree.ElementTree
 
-from coverage import env
-
+from coverage5 import env
 from tests.coveragetest import TESTS_DIR
 
 
@@ -44,13 +43,16 @@ def versioned_directory(d):
         subdir = os.path.join(d, version)
         if os.path.exists(subdir):
             return subdir
-    raise Exception("Directory missing: {}".format(d))                  # pragma: only failure
+    raise Exception("Directory missing: {}".format(d))  # pragma: only failure
 
 
 def compare(
-        expected_dir, actual_dir, file_pattern=None,
-        actual_extra=False, scrubs=None,
-        ):
+    expected_dir,
+    actual_dir,
+    file_pattern=None,
+    actual_extra=False,
+    scrubs=None,
+):
     """Compare files matching `file_pattern` in `expected_dir` and `actual_dir`.
 
     A version-specific subdirectory of `expected_dir` will be used if
@@ -94,14 +96,14 @@ def compare(
         if scrubs:
             expected = scrub(expected, scrubs)
             actual = scrub(actual, scrubs)
-        if expected != actual:                              # pragma: only failure
-            text_diff.append('%s != %s' % (expected_file, actual_file))
+        if expected != actual:  # pragma: only failure
+            text_diff.append("%s != %s" % (expected_file, actual_file))
             expected = expected.splitlines()
             actual = actual.splitlines()
             print(":::: diff {!r} and {!r}".format(expected_file, actual_file))
             print("\n".join(difflib.Differ().compare(expected, actual)))
             print(":::: end diff {!r} and {!r}".format(expected_file, actual_file))
-    assert not text_diff, "Files differ: %s" % '\n'.join(text_diff)
+    assert not text_diff, "Files differ: %s" % "\n".join(text_diff)
 
     assert not expected_only, "Files in %s only: %s" % (expected_dir, expected_only)
     if not actual_extra:
@@ -114,7 +116,7 @@ def canonicalize_xml(xtext):
     for node in root.iter():
         node.attrib = dict(sorted(node.items()))
     xtext = xml.etree.ElementTree.tostring(root)
-    return xtext.decode('utf8')
+    return xtext.decode("utf8")
 
 
 def contains(filename, *strlist):
@@ -143,8 +145,10 @@ def contains_any(filename, *strlist):
         if s in text:
             return
 
-    assert False, (                         # pragma: only failure
-        "Missing content in %s: %r [1 of %d]" % (filename, strlist[0], len(strlist),)
+    assert False, "Missing content in %s: %r [1 of %d]" % (  # pragma: only failure
+        filename,
+        strlist[0],
+        len(strlist),
     )
 
 
@@ -162,6 +166,7 @@ def doesnt_contain(filename, *strlist):
 
 
 # Helpers
+
 
 def fnmatch_list(files, file_pattern):
     """Filter the list of `files` to only those that match `file_pattern`.

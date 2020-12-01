@@ -4,11 +4,9 @@
 """Tests of miscellaneous stuff."""
 
 import pytest
-
-from coverage.misc import contract, dummy_decorator_with_args, file_be_gone
-from coverage.misc import Hasher, one_of, substitute_variables
-from coverage.misc import CoverageException, USE_CONTRACTS
-
+from coverage5.misc import CoverageException, USE_CONTRACTS
+from coverage5.misc import Hasher, one_of, substitute_variables
+from coverage5.misc import contract, dummy_decorator_with_args, file_be_gone
 from tests.coveragetest import CoverageTest
 
 
@@ -43,16 +41,16 @@ class HasherTest(CoverageTest):
 
     def test_dict_hashing(self):
         h1 = Hasher()
-        h1.update({'a': 17, 'b': 23})
+        h1.update({"a": 17, "b": 23})
         h2 = Hasher()
-        h2.update({'b': 23, 'a': 17})
+        h2.update({"b": 23, "a": 17})
         self.assertEqual(h1.hexdigest(), h2.hexdigest())
 
     def test_dict_collision(self):
         h1 = Hasher()
-        h1.update({'a': 17, 'b': {'c': 1, 'd': 2}})
+        h1.update({"a": 17, "b": {"c": 1, "d": 2}})
         h2 = Hasher()
-        h2.update({'a': 17, 'b': {'c': 1}, 'd': 2})
+        h2.update({"a": 17, "b": {"c": 1}, "d": 2})
         self.assertNotEqual(h1.hexdigest(), h2.hexdigest())
 
 
@@ -87,7 +85,7 @@ class ContractTest(CoverageTest):
             self.skipTest("Contracts are disabled")
 
     def test_bytes(self):
-        @contract(text='bytes|None')
+        @contract(text="bytes|None")
         def need_bytes(text=None):
             return text
 
@@ -97,7 +95,7 @@ class ContractTest(CoverageTest):
             need_bytes(u"Oops")
 
     def test_unicode(self):
-        @contract(text='unicode|None')
+        @contract(text="unicode|None")
         def need_unicode(text=None):
             return text
 
@@ -131,28 +129,36 @@ class ContractTest(CoverageTest):
 
 
 VARS = {
-    'FOO': 'fooey',
-    'BAR': 'xyzzy',
+    "FOO": "fooey",
+    "BAR": "xyzzy",
 }
 
-@pytest.mark.parametrize("before, after", [
-    ("Nothing to do", "Nothing to do"),
-    ("Dollar: $$", "Dollar: $"),
-    ("Simple: $FOO is fooey", "Simple: fooey is fooey"),
-    ("Braced: X${FOO}X.", "Braced: XfooeyX."),
-    ("Missing: x${NOTHING}y is xy", "Missing: xy is xy"),
-    ("Multiple: $$ $FOO $BAR ${FOO}", "Multiple: $ fooey xyzzy fooey"),
-    ("Ill-formed: ${%5} ${{HI}} ${", "Ill-formed: ${%5} ${{HI}} ${"),
-    ("Strict: ${FOO?} is there", "Strict: fooey is there"),
-    ("Defaulted: ${WUT-missing}!", "Defaulted: missing!"),
-    ("Defaulted empty: ${WUT-}!", "Defaulted empty: !"),
-])
+
+@pytest.mark.parametrize(
+    "before, after",
+    [
+        ("Nothing to do", "Nothing to do"),
+        ("Dollar: $$", "Dollar: $"),
+        ("Simple: $FOO is fooey", "Simple: fooey is fooey"),
+        ("Braced: X${FOO}X.", "Braced: XfooeyX."),
+        ("Missing: x${NOTHING}y is xy", "Missing: xy is xy"),
+        ("Multiple: $$ $FOO $BAR ${FOO}", "Multiple: $ fooey xyzzy fooey"),
+        ("Ill-formed: ${%5} ${{HI}} ${", "Ill-formed: ${%5} ${{HI}} ${"),
+        ("Strict: ${FOO?} is there", "Strict: fooey is there"),
+        ("Defaulted: ${WUT-missing}!", "Defaulted: missing!"),
+        ("Defaulted empty: ${WUT-}!", "Defaulted empty: !"),
+    ],
+)
 def test_substitute_variables(before, after):
     assert substitute_variables(before, VARS) == after
 
-@pytest.mark.parametrize("text", [
-    "Strict: ${NOTHING?} is an error",
-])
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Strict: ${NOTHING?} is an error",
+    ],
+)
 def test_substitute_variables_errors(text):
     with pytest.raises(CoverageException) as exc_info:
         substitute_variables(text, VARS)

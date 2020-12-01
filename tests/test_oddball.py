@@ -6,23 +6,22 @@
 import os.path
 import sys
 
-from flaky import flaky
+import coverage5 as coverage
 import pytest
-
-import coverage
-from coverage import env
-from coverage.backward import import_local_file
-from coverage.files import abs_file
-
-from tests.coveragetest import CoverageTest
+from coverage5 import env
+from coverage5.backward import import_local_file
+from coverage5.files import abs_file
+from flaky import flaky
 from tests import osinfo
+from tests.coveragetest import CoverageTest
 
 
 class ThreadingTest(CoverageTest):
     """Tests of the threading support."""
 
     def test_threading(self):
-        self.check_coverage("""\
+        self.check_coverage(
+            """\
             import threading
 
             def fromMainThread():
@@ -39,10 +38,13 @@ class ThreadingTest(CoverageTest):
             fromMainThread()
             other.join()
             """,
-            [1, 3, 4, 6, 7, 9, 10, 12, 13, 14, 15], "10")
+            [1, 3, 4, 6, 7, 9, 10, 12, 13, 14, 15],
+            "10",
+        )
 
     def test_thread_run(self):
-        self.check_coverage("""\
+        self.check_coverage(
+            """\
             import threading
 
             class TestThread(threading.Thread):
@@ -58,7 +60,9 @@ class ThreadingTest(CoverageTest):
             thd.start()
             thd.join()
             """,
-            [1, 3, 4, 5, 6, 7, 9, 10, 12, 13, 14], "")
+            [1, 3, 4, 5, 6, 7, 9, 10, 12, 13, 14],
+            "",
+        )
 
 
 class RecursionTest(CoverageTest):
@@ -66,7 +70,8 @@ class RecursionTest(CoverageTest):
 
     def test_short_recursion(self):
         # We can definitely get close to 500 stack frames.
-        self.check_coverage("""\
+        self.check_coverage(
+            """\
             def recur(n):
                 if n == 0:
                     return 0
@@ -76,12 +81,15 @@ class RecursionTest(CoverageTest):
             recur(495)  # We can get at least this many stack frames.
             i = 8       # and this line will be traced
             """,
-            [1, 2, 3, 5, 7, 8], "")
+            [1, 2, 3, 5, 7, 8],
+            "",
+        )
 
     def test_long_recursion(self):
         # We can't finish a very deep recursion, but we don't crash.
         with self.assertRaises(RuntimeError):
-            self.check_coverage("""\
+            self.check_coverage(
+                """\
                 def recur(n):
                     if n == 0:
                         return 0
@@ -90,8 +98,9 @@ class RecursionTest(CoverageTest):
 
                 recur(100000)  # This is definitely too many frames.
                 """,
-                [1, 2, 3, 5, 7], ""
-                )
+                [1, 2, 3, 5, 7],
+                "",
+            )
 
     def test_long_recursion_recovery(self):
         # Test the core of bug 93: https://github.com/nedbat/coveragepy/issues/93
@@ -102,7 +111,9 @@ class RecursionTest(CoverageTest):
         # the C trace function, only line 3 will be missing, and all else
         # will be traced.
 
-        self.make_file("recur.py", """\
+        self.make_file(
+            "recur.py",
+            """\
             def recur(n):
                 if n == 0:
                     return 0    # never hit
@@ -114,14 +125,15 @@ class RecursionTest(CoverageTest):
             except RuntimeError:
                 i = 10
             i = 11
-            """)
+            """,
+        )
 
         cov = coverage.Coverage()
         self.start_import_stop(cov, "recur")
 
-        pytrace = (cov._collector.tracer_name() == "PyTracer")
+        pytrace = cov._collector.tracer_name() == "PyTracer"
         expected_missing = [3]
-        if pytrace:                                 # pragma: no metacov
+        if pytrace:  # pragma: no metacov
             expected_missing += [9, 10, 11]
 
         _, statements, missing, _ = cov.analysis("recur.py")
@@ -129,10 +141,11 @@ class RecursionTest(CoverageTest):
         self.assertEqual(expected_missing, missing)
 
         # Get a warning about the stackoverflow effect on the tracing function.
-        if pytrace:                                 # pragma: no metacov
-            self.assertEqual(cov._warnings,
-                ["Trace function changed, measurement is likely wrong: None"]
-                )
+        if pytrace:  # pragma: no metacov
+            self.assertEqual(
+                cov._warnings,
+                ["Trace function changed, measurement is likely wrong: None"],
+            )
         else:
             self.assertEqual(cov._warnings, [])
 
@@ -146,6 +159,7 @@ class MemoryLeakTest(CoverageTest):
     It may still fail occasionally, especially on PyPy.
 
     """
+
     @flaky
     def test_for_leaks(self):
         if env.JYTHON:
@@ -154,8 +168,11 @@ class MemoryLeakTest(CoverageTest):
         # Our original bad memory leak only happened on line numbers > 255, so
         # make a code object with more lines than that.  Ugly string mumbo
         # jumbo to get 300 blank lines at the beginning..
-        code = """\
-            # blank line\n""" * 300 + """\
+        code = (
+            """\
+            # blank line\n"""
+            * 300
+            + """\
             def once(x):                                        # line 301
                 if x % 100 == 0:
                     raise Exception("100!")
@@ -171,8 +188,9 @@ class MemoryLeakTest(CoverageTest):
                     pass
                 i += 1                                          # line 315
             """
+        )
         lines = list(range(301, 315))
-        lines.remove(306)       # Line 306 is the "else".
+        lines.remove(306)  # Line 306 is the "else".
 
         # This is a non-deterministic test, so try it a few times, and fail it
         # only if it predominantly fails.
@@ -187,32 +205,37 @@ class MemoryLeakTest(CoverageTest):
             # running it 10 times.
             ram_growth = (ram_10k - ram_10) - (ram_10 - ram_0)
             if ram_growth > 100000:
-                fails += 1                                  # pragma: only failure
+                fails += 1  # pragma: only failure
 
         if fails > 8:
-            self.fail("RAM grew by %d" % (ram_growth))      # pragma: only failure
+            self.fail("RAM grew by %d" % (ram_growth))  # pragma: only failure
 
 
 class MemoryFumblingTest(CoverageTest):
     """Test that we properly manage the None refcount."""
 
-    def test_dropping_none(self):                           # pragma: not covered
+    def test_dropping_none(self):  # pragma: not covered
         if not env.C_TRACER:
             self.skipTest("Only the C tracer has refcounting issues")
         # TODO: Mark this so it will only be run sometimes.
         self.skipTest("This is too expensive for now (30s)")
         # Start and stop coverage thousands of times to flush out bad
         # reference counting, maybe.
-        self.make_file("the_code.py", """\
+        self.make_file(
+            "the_code.py",
+            """\
             import random
             def f():
                 if random.random() > .5:
                     x = 1
                 else:
                     x = 2
-            """)
-        self.make_file("main.py", """\
-            import coverage
+            """,
+        )
+        self.make_file(
+            "main.py",
+            """\
+            import coverage5 as coverage
             import sys
             from the_code import f
             for i in range(10000):
@@ -222,7 +245,8 @@ class MemoryFumblingTest(CoverageTest):
                 cov.stop()
                 cov.erase()
             print("Final None refcount: %d" % (sys.getrefcount(None)))
-            """)
+            """,
+        )
         status, out = self.run_command_status("python main.py")
         self.assertEqual(status, 0)
         self.assertIn("Final None refcount", out)
@@ -243,7 +267,9 @@ class PyexpatTest(CoverageTest):
         # also detect if the pyexpat bug is fixed unbeknownst to us, meaning
         # we'd see two RETURNs where there should only be one.
 
-        self.make_file("trydom.py", """\
+        self.make_file(
+            "trydom.py",
+            """\
             import xml.dom.minidom
 
             XML = '''\\
@@ -257,9 +283,10 @@ class PyexpatTest(CoverageTest):
                 a = 11
 
             foo()
-            """)
+            """,
+        )
 
-        self.make_file("outer.py", "\n"*100 + "import trydom\na = 102\n")
+        self.make_file("outer.py", "\n" * 100 + "import trydom\na = 102\n")
 
         cov = coverage.Coverage()
         cov.erase()
@@ -280,7 +307,7 @@ class PyexpatTest(CoverageTest):
         files = cov.get_data().measured_files()
         self.assertFalse(
             any(f.endswith("pyexpat.c") for f in files),
-            "Pyexpat.c is in the measured files!: %r:" % (files,)
+            "Pyexpat.c is in the measured files!: %r:" % (files,),
         )
 
 
@@ -300,21 +327,31 @@ class ExceptionTest(CoverageTest):
         # file has active lines in a different range so we'll see if the lines
         # get attributed to the wrong file.
 
-        self.make_file("oops.py", """\
+        self.make_file(
+            "oops.py",
+            """\
             def oops(args):
                 a = 2
                 raise Exception("oops")
                 a = 4
-            """)
+            """,
+        )
 
-        self.make_file("fly.py", "\n"*100 + """\
+        self.make_file(
+            "fly.py",
+            "\n" * 100
+            + """\
             def fly(calls):
                 a = 2
                 calls[0](calls[1:])
                 a = 4
-            """)
+            """,
+        )
 
-        self.make_file("catch.py", "\n"*200 + """\
+        self.make_file(
+            "catch.py",
+            "\n" * 200
+            + """\
             def catch(calls):
                 try:
                     a = 3
@@ -322,15 +359,20 @@ class ExceptionTest(CoverageTest):
                     a = 5
                 except:
                     a = 7
-            """)
+            """,
+        )
 
-        self.make_file("doit.py", "\n"*300 + """\
+        self.make_file(
+            "doit.py",
+            "\n" * 300
+            + """\
             def doit(calls):
                 try:
                     calls[0](calls[1:])
                 except:
                     a = 5
-            """)
+            """,
+        )
 
         # Import all the modules before starting coverage, so the def lines
         # won't be in all the results.
@@ -340,29 +382,41 @@ class ExceptionTest(CoverageTest):
         # Each run nests the functions differently to get different
         # combinations of catching exceptions and letting them fly.
         runs = [
-            ("doit fly oops", {
-                'doit.py': [302, 303, 304, 305],
-                'fly.py': [102, 103],
-                'oops.py': [2, 3],
-                }),
-            ("doit catch oops", {
-                'doit.py': [302, 303],
-                'catch.py': [202, 203, 204, 206, 207],
-                'oops.py': [2, 3],
-                }),
-            ("doit fly catch oops", {
-                'doit.py': [302, 303],
-                'fly.py': [102, 103, 104],
-                'catch.py': [202, 203, 204, 206, 207],
-                'oops.py': [2, 3],
-                }),
-            ("doit catch fly oops", {
-                'doit.py': [302, 303],
-                'catch.py': [202, 203, 204, 206, 207],
-                'fly.py': [102, 103],
-                'oops.py': [2, 3],
-                }),
-            ]
+            (
+                "doit fly oops",
+                {
+                    "doit.py": [302, 303, 304, 305],
+                    "fly.py": [102, 103],
+                    "oops.py": [2, 3],
+                },
+            ),
+            (
+                "doit catch oops",
+                {
+                    "doit.py": [302, 303],
+                    "catch.py": [202, 203, 204, 206, 207],
+                    "oops.py": [2, 3],
+                },
+            ),
+            (
+                "doit fly catch oops",
+                {
+                    "doit.py": [302, 303],
+                    "fly.py": [102, 103, 104],
+                    "catch.py": [202, 203, 204, 206, 207],
+                    "oops.py": [2, 3],
+                },
+            ),
+            (
+                "doit catch fly oops",
+                {
+                    "doit.py": [302, 303],
+                    "catch.py": [202, 203, 204, 206, 207],
+                    "fly.py": [102, 103],
+                    "oops.py": [2, 3],
+                },
+            ),
+        ]
 
         for callnames, lines_expected in runs:
 
@@ -374,8 +428,8 @@ class ExceptionTest(CoverageTest):
             cov.start()
             # Call our list of functions: invoke the first, with the rest as
             # an argument.
-            calls[0](calls[1:])     # pragma: nested
-            cov.stop()              # pragma: nested
+            calls[0](calls[1:])  # pragma: nested
+            cov.stop()  # pragma: nested
 
             # Clean the line data and compare to expected results.
             # The file names are absolute, so keep just the base.
@@ -386,7 +440,7 @@ class ExceptionTest(CoverageTest):
                 lines = data.lines(abs_file(filename))
                 clean_lines[filename] = sorted(lines)
 
-            if env.JYTHON:                  # pragma: only jython
+            if env.JYTHON:  # pragma: only jython
                 # Jython doesn't report on try or except lines, so take those
                 # out of the expected lines.
                 invisible = [202, 206, 302, 304]
@@ -400,7 +454,8 @@ class DoctestTest(CoverageTest):
     """Tests invoked with doctest should measure properly."""
 
     def test_doctest(self):
-        self.check_coverage('''\
+        self.check_coverage(
+            '''\
             def return_arg_or_void(arg):
                 """If <arg> is None, return "Void"; otherwise return <arg>
 
@@ -419,15 +474,20 @@ class DoctestTest(CoverageTest):
             import doctest, sys
             doctest.testmod(sys.modules[__name__])  # we're not __main__ :(
             ''',
-            [1, 11, 12, 14, 16, 17], "")
+            [1, 11, 12, 14, 16, 17],
+            "",
+        )
 
 
 class GettraceTest(CoverageTest):
     """Tests that we work properly with `sys.gettrace()`."""
+
     def test_round_trip_in_untraced_function(self):
         # https://github.com/nedbat/coveragepy/issues/575
         self.make_file("main.py", """import sample""")
-        self.make_file("sample.py", """\
+        self.make_file(
+            "sample.py",
+            """\
             from swap import swap_it
             def doit():
                 print(3)
@@ -440,12 +500,16 @@ class GettraceTest(CoverageTest):
             print(10)
             doit_soon()
             print(12)
-            """)
-        self.make_file("swap.py", """\
+            """,
+        )
+        self.make_file(
+            "swap.py",
+            """\
             import sys
             def swap_it():
                 sys.settrace(sys.gettrace())
-            """)
+            """,
+        )
 
         # Use --source=sample to prevent measurement of swap.py.
         cov = coverage.Coverage(source=["sample"])
@@ -459,7 +523,8 @@ class GettraceTest(CoverageTest):
 
     def test_setting_new_trace_function(self):
         # https://github.com/nedbat/coveragepy/issues/436
-        self.check_coverage('''\
+        self.check_coverage(
+            """\
             import sys
 
             def tracer(frame, event, arg):
@@ -482,7 +547,7 @@ class GettraceTest(CoverageTest):
             sys.settrace(old)
             a = 21
             b = 22
-            ''',
+            """,
             lines=[1, 3, 4, 5, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20, 21, 22],
             missing="4-5, 11-12",
         )
@@ -500,13 +565,15 @@ class GettraceTest(CoverageTest):
         )
 
     @pytest.mark.expensive
-    def test_atexit_gettrace(self):             # pragma: no metacov
+    def test_atexit_gettrace(self):  # pragma: no metacov
         # This is not a test of coverage at all, but of our understanding
         # of this edge-case behavior in various Pythons.
         if env.METACOV:
             self.skipTest("Can't set trace functions during meta-coverage")
 
-        self.make_file("atexit_gettrace.py", """\
+        self.make_file(
+            "atexit_gettrace.py",
+            """\
             import atexit, sys
 
             def trace_function(frame, event, arg):
@@ -521,7 +588,8 @@ class GettraceTest(CoverageTest):
             atexit.register(show_trace_function)
 
             # This will show what the trace function is at the end of the program.
-            """)
+            """,
+        )
         status, out = self.run_command_status("python atexit_gettrace.py")
         self.assertEqual(status, 0)
         if env.PYPY and env.PYPYVERSION >= (5, 4):
@@ -534,24 +602,31 @@ class GettraceTest(CoverageTest):
 
 class ExecTest(CoverageTest):
     """Tests of exec."""
+
     def test_correct_filename(self):
         # https://github.com/nedbat/coveragepy/issues/380
         # Bug was that exec'd files would have their lines attributed to the
         # calling file.  Make two files, both with ~30 lines, but no lines in
         # common.  Line 30 in to_exec.py was recorded as line 30 in main.py,
         # but now it's fixed. :)
-        self.make_file("to_exec.py", """\
+        self.make_file(
+            "to_exec.py",
+            """\
             \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
             print("var is {}".format(var))         # line 31
-            """)
-        self.make_file("main.py", """\
+            """,
+        )
+        self.make_file(
+            "main.py",
+            """\
             namespace = {'var': 17}
             with open("to_exec.py") as to_exec_py:
                 code = compile(to_exec_py.read(), 'to_exec.py', 'exec')
                 exec(code, globals(), namespace)
             \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
             print("done")                           # line 35
-            """)
+            """,
+        )
 
         cov = coverage.Coverage()
         self.start_import_stop(cov, "main")
@@ -582,11 +657,14 @@ class MockingProtectionTest(CoverageTest):
     https://github.com/nedbat/coveragepy/issues/416
 
     """
+
     def test_os_path_exists(self):
         # To see if this test still detects the problem, change isolate_module
         # in misc.py to simply return its argument.  It should fail with a
         # StopIteration error.
-        self.make_file("bug416.py", """\
+        self.make_file(
+            "bug416.py",
+            """\
             import os.path
 
             import mock
@@ -600,13 +678,18 @@ class MockingProtectionTest(CoverageTest):
                 print(os.path.exists("."))
 
             test_path_exists()
-            """)
-        self.make_file("bug416a.py", """\
+            """,
+        )
+        self.make_file(
+            "bug416a.py",
+            """\
             print("bug416a.py")
             foo = 23
-            """)
+            """,
+        )
 
         import py_compile
+
         py_compile.compile("bug416a.py")
         out = self.run_command("coverage run bug416.py")
         self.assertEqual(out, "in test\nbug416a.py\n23\n17\n")

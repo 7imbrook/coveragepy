@@ -14,12 +14,12 @@ clean_platform:                         ## Remove files that clash across platfo
 	rm -f *.pyo */*.pyo */*/*.pyo */*/*/*.pyo */*/*/*/*.pyo */*/*/*/*/*.pyo
 
 clean: clean_platform                   ## Remove artifacts of test execution, installation, etc.
-	-pip uninstall -y coverage
+	-pip uninstall -y coverage5
 	rm -f *.pyd */*.pyd
-	rm -rf build coverage.egg-info dist htmlcov
+	rm -rf build coverage5.egg-info dist htmlcov
 	rm -f *.bak */*.bak */*/*.bak */*/*/*.bak */*/*/*/*.bak */*/*/*/*/*.bak
 	rm -f *$$py.class */*$$py.class */*/*$$py.class */*/*/*$$py.class */*/*/*/*$$py.class */*/*/*/*/*$$py.class
-	rm -f coverage/*,cover
+	rm -f coverage5/*,cover
 	rm -f MANIFEST
 	rm -f .coverage .coverage.* coverage.xml .metacov*
 	rm -f .tox/*/lib/*/site-packages/zzz_metacov.pth
@@ -38,15 +38,15 @@ sterile: clean                          ## Remove all non-controlled content, ev
 	-docker image rm -f quay.io/pypa/manylinux1_i686 quay.io/pypa/manylinux1_x86_64
 
 
-CSS = coverage/htmlfiles/style.css
-SCSS = coverage/htmlfiles/style.scss
+CSS = coverage5/htmlfiles/style.css
+SCSS = coverage5/htmlfiles/style.scss
 
 css: $(CSS)				## Compile .scss into .css.
 $(CSS): $(SCSS)
 	pysassc --style=compact $(SCSS) $@
 	cp $@ tests/gold/html/styled
 
-LINTABLE = coverage tests igor.py setup.py __main__.py
+LINTABLE = coverage5 tests igor.py setup.py __main__.py
 
 lint:					## Run linters and checkers.
 	tox -e lint
@@ -116,7 +116,7 @@ kit_local:
 	cp -v dist/* `awk -F "//" '/find-links/ {print $$2}' ~/.pip/pip.conf`
 	# pip caches wheels of things it has installed. Clean them out so we
 	# don't go crazy trying to figure out why our new code isn't installing.
-	find ~/Library/Caches/pip/wheels -name 'coverage-*' -delete
+	find ~/Library/Caches/pip/wheels -name 'coverage5-*' -delete
 
 download_appveyor:			## Download the latest Windows artifacts from AppVeyor.
 	python ci/download_appveyor.py nedbat/coveragepy
@@ -142,10 +142,10 @@ cmd_help: $(DOCBIN)
 		echo > doc/help/$$cmd.rst; \
 		echo ".. code::" >> doc/help/$$cmd.rst; \
 		echo >> doc/help/$$cmd.rst; \
-		echo "    $$ coverage $$cmd --help" >> doc/help/$$cmd.rst; \
-		$(DOCBIN)/python -m coverage $$cmd --help | \
+		echo "    $$ coverage5 $$cmd --help" >> doc/help/$$cmd.rst; \
+		$(DOCBIN)/python -m coverage5 $$cmd --help | \
 		sed \
-			-e 's/__main__.py/coverage/' \
+			-e 's/__main__.py/coverage5/' \
 			-e '/^Full doc/d' \
 			-e 's/^./    &/' \
 			>> doc/help/$$cmd.rst; \

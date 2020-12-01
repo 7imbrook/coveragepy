@@ -3,8 +3,8 @@
 import os
 import sys
 
-from coverage.misc import CoverageException
-from coverage.parser import PythonParser
+from coverage5.misc import CoverageException
+from coverage5.parser import PythonParser
 
 for root, dirnames, filenames in os.walk(sys.argv[1]):
     for filename in filenames:

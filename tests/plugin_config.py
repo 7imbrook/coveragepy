@@ -3,11 +3,12 @@
 
 """A configuring plugin for test_plugins.py to import."""
 
-import coverage
+import coverage5 as coverage
 
 
 class Plugin(coverage.CoveragePlugin):
     """A configuring plugin for testing."""
+
     def configure(self, config):
         """Configure all the things!"""
         opt_name = "report:exclude_lines"
@@ -17,6 +18,6 @@ class Plugin(coverage.CoveragePlugin):
         config.set_option(opt_name, exclude_lines)
 
 
-def coverage_init(reg, options):        # pylint: disable=unused-argument
+def coverage_init(reg, options):  # pylint: disable=unused-argument
     """Called by coverage to initialize the plugins here."""
     reg.add_configurer(Plugin())

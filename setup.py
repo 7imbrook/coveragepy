@@ -8,12 +8,12 @@
 
 import os
 import sys
+from distutils import errors  # pylint: disable=wrong-import-order
+from distutils.command.build_ext import build_ext  # pylint: disable=wrong-import-order
 
 # Setuptools has to be imported before distutils, or things break.
 from setuptools import setup
-from distutils.core import Extension                # pylint: disable=wrong-import-order
-from distutils.command.build_ext import build_ext   # pylint: disable=wrong-import-order
-from distutils import errors                        # pylint: disable=wrong-import-order
+from distutils.core import Extension  # pylint: disable=wrong-import-order
 
 
 # Get or massage our metadata.  We exec coverage/version.py so we can avoid
@@ -39,14 +39,14 @@ Topic :: Software Development :: Quality Assurance
 Topic :: Software Development :: Testing
 """
 
-cov_ver_py = os.path.join(os.path.split(__file__)[0], "coverage/version.py")
+cov_ver_py = os.path.join(os.path.split(__file__)[0], "coverage5/version.py")
 with open(cov_ver_py) as version_file:
     # __doc__ will be overwritten by version.py.
     doc = __doc__
     # Keep pylint happy.
     __version__ = __url__ = version_info = ""
     # Execute the code in version.py.
-    exec(compile(version_file.read(), cov_ver_py, 'exec'))
+    exec(compile(version_file.read(), cov_ver_py, "exec"))
 
 with open("README.rst") as readme:
     long_description = readme.read().replace("https://coverage.readthedocs.io", __url__)
@@ -54,70 +54,64 @@ with open("README.rst") as readme:
 with open("CONTRIBUTORS.txt", "rb") as contributors:
     paras = contributors.read().split(b"\n\n")
     num_others = len(paras[-1].splitlines())
-    num_others += 1                 # Count Gareth Rees, who is mentioned in the top paragraph.
+    num_others += 1  # Count Gareth Rees, who is mentioned in the top paragraph.
 
 classifier_list = classifiers.splitlines()
 
-if version_info[3] == 'alpha':
+if version_info[3] == "alpha":
     devstat = "3 - Alpha"
-elif version_info[3] in ['beta', 'candidate']:
+elif version_info[3] in ["beta", "candidate"]:
     devstat = "4 - Beta"
 else:
-    assert version_info[3] == 'final'
+    assert version_info[3] == "final"
     devstat = "5 - Production/Stable"
 classifier_list.append("Development Status :: " + devstat)
 
 # Create the keyword arguments for setup()
 
 setup_args = dict(
-    name='coverage',
+    name="coverage5",
     version=__version__,
-
     packages=[
-        'coverage',
+        "coverage5",
     ],
-
     package_data={
-        'coverage': [
-            'htmlfiles/*.*',
-            'fullcoverage/*.*',
+        "coverage5": [
+            "htmlfiles/*.*",
+            "fullcoverage/*.*",
         ]
     },
-
     entry_points={
-        # Install a script as "coverage", and as "coverage[23]", and as
+        # Install a script as "coverage5", and as "coverage[23]", and as
         # "coverage-2.7" (or whatever).
-        'console_scripts': [
-            'coverage = coverage.cmdline:main',
-            'coverage%d = coverage.cmdline:main' % sys.version_info[:1],
-            'coverage-%d.%d = coverage.cmdline:main' % sys.version_info[:2],
+        "console_scripts": [
+            "coverage5 = coverage5.cmdline:main",
+            "coverage5%d = coverage5.cmdline:main" % sys.version_info[:1],
+            "coverage5-%d.%d = coverage5.cmdline:main" % sys.version_info[:2],
         ],
     },
-
     extras_require={
         # Enable pyproject.toml support.
-        'toml': ['toml'],
+        "toml": ["toml"],
     },
-
     # We need to get HTML assets from our htmlfiles directory.
     zip_safe=False,
-
-    author='Ned Batchelder and {} others'.format(num_others),
-    author_email='ned@nedbatchelder.com',
+    author="Ned Batchelder and {} others".format(num_others),
+    author_email="ned@nedbatchelder.com",
     description=doc,
     long_description=long_description,
-    long_description_content_type='text/x-rst',
-    keywords='code coverage testing',
-    license='Apache 2.0',
+    long_description_content_type="text/x-rst",
+    keywords="code coverage testing",
+    license="Apache 2.0",
     classifiers=classifier_list,
-    url="https://github.com/nedbat/coveragepy",
+    url="https://github.com/7imbrook/coveragepy",
     project_urls={
-        'Documentation': __url__,
-        'Funding': (
-            'https://tidelift.com/subscription/pkg/pypi-coverage'
-            '?utm_source=pypi-coverage&utm_medium=referral&utm_campaign=pypi'
+        "Documentation": __url__,
+        "Funding": (
+            "https://tidelift.com/subscription/pkg/pypi-coverage"
+            "?utm_source=pypi-coverage&utm_medium=referral&utm_campaign=pypi"
         ),
-        'Issues': 'https://github.com/nedbat/coveragepy/issues',
+        "Issues": "https://github.com/7imbrook/coveragepy/issues",
     },
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4",
 )
@@ -130,7 +124,7 @@ ext_errors = (
     errors.DistutilsExecError,
     errors.DistutilsPlatformError,
 )
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # distutils.msvc9compiler can raise an IOError when failing to
     # find the compiler
     ext_errors += (IOError,)
@@ -138,9 +132,10 @@ if sys.platform == 'win32':
 
 class BuildFailed(Exception):
     """Raise this to indicate the C extension wouldn't build."""
+
     def __init__(self):
         Exception.__init__(self)
-        self.cause = sys.exc_info()[1]      # work around py 2/3 different syntax
+        self.cause = sys.exc_info()[1]  # work around py 2/3 different syntax
 
 
 class ve_build_ext(build_ext):
@@ -163,40 +158,43 @@ class ve_build_ext(build_ext):
             raise BuildFailed()
         except ValueError as err:
             # this can happen on Windows 64 bit, see Python issue 7511
-            if "'path'" in str(err):    # works with both py 2/3
+            if "'path'" in str(err):  # works with both py 2/3
                 raise BuildFailed()
             raise
+
 
 # There are a few reasons we might not be able to compile the C extension.
 # Figure out if we should attempt the C extension or not.
 
 compile_extension = True
 
-if sys.platform.startswith('java'):
+if sys.platform.startswith("java"):
     # Jython can't compile C extensions
     compile_extension = False
 
-if '__pypy__' in sys.builtin_module_names:
+if "__pypy__" in sys.builtin_module_names:
     # Pypy can't compile C extensions
     compile_extension = False
 
 if compile_extension:
-    setup_args.update(dict(
-        ext_modules=[
-            Extension(
-                "coverage.tracer",
-                sources=[
-                    "coverage/ctracer/datastack.c",
-                    "coverage/ctracer/filedisp.c",
-                    "coverage/ctracer/module.c",
-                    "coverage/ctracer/tracer.c",
-                ],
-            ),
-        ],
-        cmdclass={
-            'build_ext': ve_build_ext,
-        },
-    ))
+    setup_args.update(
+        dict(
+            ext_modules=[
+                Extension(
+                    "coverage5.tracer",
+                    sources=[
+                        "coverage5/ctracer/datastack.c",
+                        "coverage5/ctracer/filedisp.c",
+                        "coverage5/ctracer/module.c",
+                        "coverage5/ctracer/tracer.c",
+                    ],
+                ),
+            ],
+            cmdclass={
+                "build_ext": ve_build_ext,
+            },
+        )
+    )
 
 
 def main():
@@ -210,8 +208,9 @@ def main():
         exc_msg = "%s: %s" % (exc.__class__.__name__, exc.cause)
         print("**\n** %s\n** %s\n**" % (msg, exc_msg))
 
-        del setup_args['ext_modules']
+        del setup_args["ext_modules"]
         setup(**setup_args)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

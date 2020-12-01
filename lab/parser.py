@@ -14,9 +14,8 @@ import sys
 import textwrap
 
 import disgen
-
-from coverage.parser import PythonParser
-from coverage.python import get_python_source
+from coverage5.parser import PythonParser
+from coverage5.python import get_python_source
 
 opcode_counts = collections.Counter()
 
@@ -28,26 +27,23 @@ class ParserMain(object):
         """A main function for trying the code from the command line."""
 
         parser = optparse.OptionParser()
+        parser.add_option("-d", action="store_true", dest="dis", help="Disassemble")
         parser.add_option(
-            "-d", action="store_true", dest="dis",
-            help="Disassemble"
-            )
+            "-H",
+            action="store_true",
+            dest="histogram",
+            help="Count occurrences of opcodes",
+        )
         parser.add_option(
-            "-H", action="store_true", dest="histogram",
-            help="Count occurrences of opcodes"
-            )
+            "-R",
+            action="store_true",
+            dest="recursive",
+            help="Recurse to find source files",
+        )
         parser.add_option(
-            "-R", action="store_true", dest="recursive",
-            help="Recurse to find source files"
-            )
-        parser.add_option(
-            "-s", action="store_true", dest="source",
-            help="Show analyzed source"
-            )
-        parser.add_option(
-            "-t", action="store_true", dest="tokens",
-            help="Show tokens"
-            )
+            "-s", action="store_true", dest="source", help="Show analyzed source"
+        )
+        parser.add_option("-t", action="store_true", dest="tokens", help="Show tokens")
 
         options, args = parser.parse_args()
         if options.recursive:
@@ -67,7 +63,7 @@ class ParserMain(object):
             total = sum(opcode_counts.values())
             print("{} total opcodes".format(total))
             for opcode, number in opcode_counts.most_common():
-                print("{:20s} {:6d}  {:.1%}".format(opcode, number, number/total))
+                print("{:20s} {:6d}  {:.1%}".format(opcode, number, number / total))
 
     def one_file(self, options, filename):
         """Process just one file."""
@@ -85,7 +81,9 @@ class ParserMain(object):
             text = get_python_source(filename)
             if start is not None:
                 lines = text.splitlines(True)
-                text = textwrap.dedent("".join(lines[start-1:end]).replace("\\\\", "\\"))
+                text = textwrap.dedent(
+                    "".join(lines[start - 1 : end]).replace("\\\\", "\\")
+                )
             pyparser = PythonParser(text, filename=filename, exclude=r"no\s*cover")
             pyparser.parse_source()
         except Exception as err:
@@ -110,21 +108,21 @@ class ParserMain(object):
                 exit_counts = pyparser.exit_counts()
 
                 for lineno, ltext in enumerate(pyparser.lines, start=1):
-                    marks = [' ', ' ', ' ', ' ', ' ']
-                    a = ' '
+                    marks = [" ", " ", " ", " ", " "]
+                    a = " "
                     if lineno in pyparser.raw_statements:
-                        marks[0] = '-'
+                        marks[0] = "-"
                     if lineno in pyparser.statements:
-                        marks[1] = '='
+                        marks[1] = "="
                     exits = exit_counts.get(lineno, 0)
                     if exits > 1:
                         marks[2] = str(exits)
                     if lineno in pyparser.raw_docstrings:
                         marks[3] = '"'
                     if lineno in pyparser.raw_classdefs:
-                        marks[3] = 'C'
+                        marks[3] = "C"
                     if lineno in pyparser.raw_excluded:
-                        marks[4] = 'x'
+                        marks[4] = "x"
 
                     if arc_chars:
                         a = arc_chars[lineno].ljust(arc_width)
@@ -149,8 +147,8 @@ class ParserMain(object):
                     continue
                 if disline.first:
                     if srclines:
-                        upto = upto or disline.lineno-1
-                        while upto <= disline.lineno-1:
+                        upto = upto or disline.lineno - 1
+                        while upto <= disline.lineno - 1:
                             print("%100s%s" % ("", srclines[upto]))
                             upto += 1
                     elif disline.offset > 0:
@@ -171,34 +169,31 @@ class ParserMain(object):
         arc_chars = collections.defaultdict(str)
         for lfrom, lto in sorted(arcs):
             if lfrom < 0:
-                arc_chars[lto] += 'v'
+                arc_chars[lto] += "v"
             elif lto < 0:
-                arc_chars[lfrom] += '^'
+                arc_chars[lfrom] += "^"
             else:
                 if lfrom == lto - 1:
                     plus_ones.add(lfrom)
-                    arc_chars[lfrom] += ""      # ensure this line is in arc_chars
+                    arc_chars[lfrom] += ""  # ensure this line is in arc_chars
                     continue
                 if lfrom < lto:
                     l1, l2 = lfrom, lto
                 else:
                     l1, l2 = lto, lfrom
-                w = first_all_blanks(arc_chars[l] for l in range(l1, l2+1))
-                for l in range(l1, l2+1):
+                w = first_all_blanks(arc_chars[l] for l in range(l1, l2 + 1))
+                for l in range(l1, l2 + 1):
                     if l == lfrom:
-                        ch = '<'
+                        ch = "<"
                     elif l == lto:
-                        ch = '>'
+                        ch = ">"
                     else:
-                        ch = '|'
+                        ch = "|"
                     arc_chars[l] = set_char(arc_chars[l], w, ch)
 
         # Add the plusses as the first character
         for lineno, arcs in arc_chars.items():
-            arc_chars[lineno] = (
-                ("+" if lineno in plus_ones else " ") +
-                arcs
-            )
+            arc_chars[lineno] = ("+" if lineno in plus_ones else " ") + arcs
 
         return arc_chars
 
@@ -206,7 +201,7 @@ class ParserMain(object):
 def set_char(s, n, c):
     """Set the nth char of s to be c, extending s if needed."""
     s = s.ljust(n)
-    return s[:n] + c + s[n+1:]
+    return s[:n] + c + s[n + 1 :]
 
 
 def blanks(s):
@@ -226,5 +221,5 @@ def first_all_blanks(ss):
         return max(len(s) for s in ss)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ParserMain().main(sys.argv[1:])

@@ -6,11 +6,12 @@
 #
 # Written by Kyle Altendorf.
 
-import attr
 import itertools
+import sys
+
+import attr
 import numpy
 import scipy.optimize
-import sys
 
 
 def f(*args, simplify=False):
@@ -24,6 +25,7 @@ def f(*args, simplify=False):
         p = sorted(p, key=lambda x: (len(x), x))
 
     return p
+
 
 def m(*args):
     if len(args) == 0:
@@ -45,7 +47,7 @@ class Poly:
     def calculate(self, coefficients, **name_values):
         for name in name_values:
             if name not in self.names:
-                raise Exception('bad parameter')
+                raise Exception("bad parameter")
 
         substituted_terms = []
         for term in self.terms:
@@ -61,15 +63,17 @@ class Poly:
         return total
 
 
-poly = Poly('f', 'c', 'l')
+poly = Poly("f", "c", "l")
 
-#print('\n'.join(str(t) for t in poly.terms))
+# print('\n'.join(str(t) for t in poly.terms))
+
 
 @attr.s
 class FCL:
     f = attr.ib()
     c = attr.ib()
     l = attr.ib()
+
 
 INPUT = """\
 1,1,1,18,242,1119
@@ -204,7 +208,8 @@ for row in INPUT.splitlines():
     row = [int(v) for v in row.split(",")]
     inputs_outputs[FCL(*row[:3])] = FCL(*row[3:])
 
-#print('\n'.join(str(t) for t in inputs_outputs.items()))
+# print('\n'.join(str(t) for t in inputs_outputs.items()))
+
 
 def calc_poly_coeff(poly, coefficients):
     c_tuples = list(((c,) for c in coefficients))
@@ -214,6 +219,7 @@ def calc_poly_coeff(poly, coefficients):
     total = sum(multiplied)
     return total
 
+
 def calc_error(inputs, output, coefficients):
     result = poly.calculate(coefficients, **inputs)
     return result - output
@@ -222,26 +228,32 @@ def calc_error(inputs, output, coefficients):
 def calc_total_error(inputs_outputs, coefficients, name):
     total_error = 0
     for inputs, outputs in inputs_outputs.items():
-        total_error += abs(calc_error(attr.asdict(inputs), attr.asdict(outputs)[name], coefficients))
+        total_error += abs(
+            calc_error(attr.asdict(inputs), attr.asdict(outputs)[name], coefficients)
+        )
 
     return total_error
 
+
 coefficient_count = len(poly.terms)
-#print('count: {}'.format(coefficient_count))
+# print('count: {}'.format(coefficient_count))
 x0 = numpy.array((0,) * coefficient_count)
 
-#print(x0)
+# print(x0)
 
-with open('results', 'w') as f:
-    for name in sorted(attr.asdict(FCL(0,0,0))):
+with open("results", "w") as f:
+    for name in sorted(attr.asdict(FCL(0, 0, 0))):
         c = scipy.optimize.minimize(
-            fun=lambda c: calc_total_error(inputs_outputs, c, name),
-            x0=x0
+            fun=lambda c: calc_total_error(inputs_outputs, c, name), x0=x0
         )
 
         coefficients = [int(round(x)) for x in c.x]
-        terms = [''.join(t) for t in poly.terms]
+        terms = ["".join(t) for t in poly.terms]
         message = "{}' = ".format(name)
-        message += ' + '.join("{}{}".format(coeff if coeff != 1 else '', term) for coeff, term in reversed(list(zip(coefficients, terms))) if coeff != 0)
+        message += " + ".join(
+            "{}{}".format(coeff if coeff != 1 else "", term)
+            for coeff, term in reversed(list(zip(coefficients, terms)))
+            if coeff != 0
+        )
         print(message)
         f.write(message)

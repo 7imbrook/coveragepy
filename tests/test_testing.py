@@ -9,23 +9,21 @@ import os
 import re
 import sys
 
+import coverage5 as coverage
 import pytest
-
-import coverage
-from coverage.backunittest import TestCase, unittest
-from coverage.files import actual_path
-from coverage.misc import StopEverything
+from coverage5.backunittest import TestCase, unittest
+from coverage5.files import actual_path
+from coverage5.misc import StopEverything
 import coverage.optional
-
 from tests.coveragetest import CoverageTest, convert_skip_exceptions
-from tests.helpers import arcs_to_arcz_repr, arcz_to_arcs
 from tests.helpers import CheckUniqueFilenames, re_lines, re_line
+from tests.helpers import arcs_to_arcz_repr, arcz_to_arcs
 
 
 def test_xdist_sys_path_nuttiness_is_fixed():
     # See conftest.py:fix_xdist_sys_path
-    assert sys.path[1] != ''
-    assert os.environ.get('PYTHONPATH') is None
+    assert sys.path[1] != ""
+    assert os.environ.get("PYTHONPATH") is None
 
 
 class TestingTest(TestCase):
@@ -33,11 +31,11 @@ class TestingTest(TestCase):
 
     def test_assert_count_equal(self):
         self.assertCountEqual(set(), set())
-        self.assertCountEqual(set([1,2,3]), set([3,1,2]))
+        self.assertCountEqual(set([1, 2, 3]), set([3, 1, 2]))
         with self.assertRaises(AssertionError):
-            self.assertCountEqual(set([1,2,3]), set())
+            self.assertCountEqual(set([1, 2, 3]), set())
         with self.assertRaises(AssertionError):
-            self.assertCountEqual(set([1,2,3]), set([4,5,6]))
+            self.assertCountEqual(set([1, 2, 3]), set([4, 5, 6]))
 
 
 class CoverageTestTest(CoverageTest):
@@ -182,17 +180,20 @@ class CoverageTestTest(CoverageTest):
 
     def test_sub_python_is_this_python(self):
         # Try it with a Python command.
-        self.set_environ('COV_FOOBAR', 'XYZZY')
-        self.make_file("showme.py", """\
+        self.set_environ("COV_FOOBAR", "XYZZY")
+        self.make_file(
+            "showme.py",
+            """\
             import os, sys
             print(sys.executable)
             print(os.__file__)
             print(os.environ['COV_FOOBAR'])
-            """)
+            """,
+        )
         out = self.run_command("python showme.py").splitlines()
         self.assertEqual(actual_path(out[0]), actual_path(sys.executable))
         self.assertEqual(out[1], os.__file__)
-        self.assertEqual(out[2], 'XYZZY')
+        self.assertEqual(out[2], "XYZZY")
 
         # Try it with a "coverage debug sys" command.
         out = self.run_command("coverage debug sys")
@@ -208,11 +209,14 @@ class CoverageTestTest(CoverageTest):
 
     def test_run_command_stdout_stderr(self):
         # run_command should give us both stdout and stderr.
-        self.make_file("outputs.py", """\
+        self.make_file(
+            "outputs.py",
+            """\
             import sys
             sys.stderr.write("StdErr\\n")
             print("StdOut")
-            """)
+            """,
+        )
         out = self.run_command("python outputs.py")
         self.assertIn("StdOut\n", out)
         self.assertIn("StdErr\n", out)
@@ -225,6 +229,7 @@ class CheckUniqueFilenamesTest(CoverageTest):
 
     class Stub(object):
         """A stand-in for the class we're checking."""
+
         def __init__(self, x):
             self.x = x
 
@@ -245,32 +250,47 @@ class CheckUniqueFilenamesTest(CoverageTest):
             stub.method("file1")
 
 
-@pytest.mark.parametrize("text, pat, result", [
-    ("line1\nline2\nline3\n", "line", "line1\nline2\nline3\n"),
-    ("line1\nline2\nline3\n", "[13]", "line1\nline3\n"),
-    ("line1\nline2\nline3\n", "X", ""),
-])
+@pytest.mark.parametrize(
+    "text, pat, result",
+    [
+        ("line1\nline2\nline3\n", "line", "line1\nline2\nline3\n"),
+        ("line1\nline2\nline3\n", "[13]", "line1\nline3\n"),
+        ("line1\nline2\nline3\n", "X", ""),
+    ],
+)
 def test_re_lines(text, pat, result):
     assert re_lines(text, pat) == result
 
-@pytest.mark.parametrize("text, pat, result", [
-    ("line1\nline2\nline3\n", "line", ""),
-    ("line1\nline2\nline3\n", "[13]", "line2\n"),
-    ("line1\nline2\nline3\n", "X", "line1\nline2\nline3\n"),
-])
+
+@pytest.mark.parametrize(
+    "text, pat, result",
+    [
+        ("line1\nline2\nline3\n", "line", ""),
+        ("line1\nline2\nline3\n", "[13]", "line2\n"),
+        ("line1\nline2\nline3\n", "X", "line1\nline2\nline3\n"),
+    ],
+)
 def test_re_lines_inverted(text, pat, result):
     assert re_lines(text, pat, match=False) == result
 
-@pytest.mark.parametrize("text, pat, result", [
-    ("line1\nline2\nline3\n", "2", "line2"),
-])
+
+@pytest.mark.parametrize(
+    "text, pat, result",
+    [
+        ("line1\nline2\nline3\n", "2", "line2"),
+    ],
+)
 def test_re_line(text, pat, result):
     assert re_line(text, pat) == result
 
-@pytest.mark.parametrize("text, pat", [
-    ("line1\nline2\nline3\n", "line"),      # too many matches
-    ("line1\nline2\nline3\n", "X"),         # no matches
-])
+
+@pytest.mark.parametrize(
+    "text, pat",
+    [
+        ("line1\nline2\nline3\n", "line"),  # too many matches
+        ("line1\nline2\nline3\n", "X"),  # no matches
+    ],
+)
 def test_re_line_bad(text, pat):
     with pytest.raises(AssertionError):
         re_line(text, pat)
@@ -308,7 +328,7 @@ def _same_python_executable(e1, e2):
     e2 = os.path.abspath(os.path.realpath(e2))
 
     if os.path.dirname(e1) != os.path.dirname(e2):
-        return False                                    # pragma: only failure
+        return False  # pragma: only failure
 
     e1 = os.path.basename(e1)
     e2 = os.path.basename(e2)
@@ -320,42 +340,50 @@ def _same_python_executable(e1, e2):
         # Python2.3 and Python2.3: OK
         return True
 
-    return False                                        # pragma: only failure
+    return False  # pragma: only failure
 
 
 def test_optional_without():
     # pylint: disable=reimported
-    from coverage.optional import toml as toml1
-    with coverage.optional.without('toml'):
-        from coverage.optional import toml as toml2
-    from coverage.optional import toml as toml3
+    from coverage5.optional import toml as toml1
+
+    with coverage.optional.without("toml"):
+        from coverage5.optional import toml as toml2
+    from coverage5.optional import toml as toml3
 
     assert toml1 is toml3 is not None
     assert toml2 is None
 
 
-@pytest.mark.parametrize("arcz, arcs", [
-    (".1 12 2.", [(-1, 1), (1, 2), (2, -1)]),
-    ("-11 12 2-5", [(-1, 1), (1, 2), (2, -5)]),
-    ("-QA CB IT Z-A", [(-26, 10), (12, 11), (18, 29), (35, -10)]),
-])
+@pytest.mark.parametrize(
+    "arcz, arcs",
+    [
+        (".1 12 2.", [(-1, 1), (1, 2), (2, -1)]),
+        ("-11 12 2-5", [(-1, 1), (1, 2), (2, -5)]),
+        ("-QA CB IT Z-A", [(-26, 10), (12, 11), (18, 29), (35, -10)]),
+    ],
+)
 def test_arcz_to_arcs(arcz, arcs):
     assert arcz_to_arcs(arcz) == arcs
 
 
-@pytest.mark.parametrize("arcs, arcz_repr", [
-    ([(-1, 1), (1, 2), (2, -1)], "(-1, 1) # .1\n(1, 2) # 12\n(2, -1) # 2.\n"),
-    ([(-1, 1), (1, 2), (2, -5)], "(-1, 1) # .1\n(1, 2) # 12\n(2, -5) # 2-5\n"),
-    ([(-26, 10), (12, 11), (18, 29), (35, -10), (1, 33), (100, 7)],
+@pytest.mark.parametrize(
+    "arcs, arcz_repr",
+    [
+        ([(-1, 1), (1, 2), (2, -1)], "(-1, 1) # .1\n(1, 2) # 12\n(2, -1) # 2.\n"),
+        ([(-1, 1), (1, 2), (2, -5)], "(-1, 1) # .1\n(1, 2) # 12\n(2, -5) # 2-5\n"),
         (
-        "(-26, 10) # -QA\n"
-        "(12, 11) # CB\n"
-        "(18, 29) # IT\n"
-        "(35, -10) # Z-A\n"
-        "(1, 33) # 1X\n"
-        "(100, 7) # ?7\n"
-        )
-    ),
-])
+            [(-26, 10), (12, 11), (18, 29), (35, -10), (1, 33), (100, 7)],
+            (
+                "(-26, 10) # -QA\n"
+                "(12, 11) # CB\n"
+                "(18, 29) # IT\n"
+                "(35, -10) # Z-A\n"
+                "(1, 33) # 1X\n"
+                "(100, 7) # ?7\n"
+            ),
+        ),
+    ],
+)
 def test_arcs_to_arcz_repr(arcs, arcz_repr):
     assert arcs_to_arcz_repr(arcs) == arcz_repr

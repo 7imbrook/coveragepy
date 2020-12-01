@@ -5,7 +5,7 @@
 
 import os.path
 
-import coverage
+import coverage5 as coverage
 
 
 class Plugin(coverage.CoveragePlugin):
@@ -28,8 +28,7 @@ class FileTracer(coverage.FileTracer):
         """Claim that */*xyz.py was actually sourced from /src/*ABC.zz"""
         self._filename = filename
         self._source_filename = os.path.join(
-            "/src",
-            os.path.basename(filename.replace("xyz.py", "ABC.zz"))
+            "/src", os.path.basename(filename.replace("xyz.py", "ABC.zz"))
         )
 
     def source_filename(self):
@@ -38,15 +37,16 @@ class FileTracer(coverage.FileTracer):
     def line_number_range(self, frame):
         """Map the line number X to X05,X06,X07."""
         lineno = frame.f_lineno
-        return lineno*100+5, lineno*100+7
+        return lineno * 100 + 5, lineno * 100 + 7
 
 
 class FileReporter(coverage.FileReporter):
     """Dead-simple FileReporter."""
+
     def lines(self):
         return set([105, 106, 107, 205, 206, 207])
 
 
-def coverage_init(reg, options):        # pylint: disable=unused-argument
+def coverage_init(reg, options):  # pylint: disable=unused-argument
     """Called by coverage to initialize the plugins here."""
     reg.add_file_tracer(Plugin())

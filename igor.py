@@ -53,7 +53,7 @@ def do_remove_extension():
         """.split()
 
     for pattern in so_patterns:
-        pattern = os.path.join("coverage", pattern)
+        pattern = os.path.join("coverage5", pattern)
         for filename in glob.glob(pattern):
             try:
                 os.remove(filename)
@@ -94,7 +94,7 @@ def make_env_id(tracer):
     """An environment id that will keep all the test runs distinct."""
     impl = platform.python_implementation().lower()
     version = "%s%s" % sys.version_info[:2]
-    if '__pypy__' in sys.builtin_module_names:
+    if "__pypy__" in sys.builtin_module_names:
         version += "_%s%s" % sys.pypy_version_info[:2]
     env_id = "%s%s_%s" % (impl, version, tracer)
     return env_id
@@ -102,11 +102,11 @@ def make_env_id(tracer):
 
 def run_tests(tracer, *runner_args):
     """The actual running of tests."""
-    if 'COVERAGE_TESTING' not in os.environ:
-        os.environ['COVERAGE_TESTING'] = "True"
+    if "COVERAGE_TESTING" not in os.environ:
+        os.environ["COVERAGE_TESTING"] = "True"
     # $set_env.py: COVERAGE_ENV_ID - Use environment-specific test directories.
-    if 'COVERAGE_ENV_ID' in os.environ:
-        os.environ['COVERAGE_ENV_ID'] = make_env_id(tracer)
+    if "COVERAGE_ENV_ID" in os.environ:
+        os.environ["COVERAGE_ENV_ID"] = make_env_id(tracer)
     print_banner(label_for_tracer(tracer))
     return pytest.main(list(runner_args))
 
@@ -114,9 +114,9 @@ def run_tests(tracer, *runner_args):
 def run_tests_with_coverage(tracer, *runner_args):
     """Run tests, but with coverage."""
     # Need to define this early enough that the first import of env.py sees it.
-    os.environ['COVERAGE_TESTING'] = "True"
-    os.environ['COVERAGE_PROCESS_START'] = os.path.abspath('metacov.ini')
-    os.environ['COVERAGE_HOME'] = os.getcwd()
+    os.environ["COVERAGE_TESTING"] = "True"
+    os.environ["COVERAGE_PROCESS_START"] = os.path.abspath("metacov.ini")
+    os.environ["COVERAGE_HOME"] = os.getcwd()
 
     # Create the .pth file that will let us measure coverage in sub-processes.
     # The .pth file seems to have to be alphabetically after easy-install.pth
@@ -125,12 +125,13 @@ def run_tests_with_coverage(tracer, *runner_args):
     pth_dir = os.path.dirname(pytest.__file__)
     pth_path = os.path.join(pth_dir, "zzz_metacov.pth")
     with open(pth_path, "w") as pth_file:
-        pth_file.write("import coverage; coverage.process_startup()\n")
+        pth_file.write("import coverage5; coverage5.process_startup()\n")
 
     suffix = "%s_%s" % (make_env_id(tracer), platform.platform())
-    os.environ['COVERAGE_METAFILE'] = os.path.abspath(".metacov."+suffix)
+    os.environ["COVERAGE_METAFILE"] = os.path.abspath(".metacov." + suffix)
 
-    import coverage
+    import coverage5 as coverage
+
     cov = coverage.Coverage(config_file="metacov.ini")
     cov._warn_unimported_source = False
     cov._warn_preimported_source = False
@@ -145,11 +146,12 @@ def run_tests_with_coverage(tracer, *runner_args):
         # We have to make a list since we'll be deleting in the loop.
         modules = list(sys.modules.items())
         for name, mod in modules:
-            if name.startswith('coverage'):
-                if getattr(mod, '__file__', "??").startswith(covdir):
+            if name.startswith("coverage5"):
+                if getattr(mod, "__file__", "??").startswith(covdir):
                     covmods[name] = mod
                     del sys.modules[name]
-        import coverage                         # pylint: disable=reimported
+        import coverage5  # pylint: disable=reimported
+
         sys.modules.update(covmods)
 
         # Run tests, with the arguments from our command line.
@@ -167,14 +169,15 @@ def run_tests_with_coverage(tracer, *runner_args):
 
 def do_combine_html():
     """Combine data from a meta-coverage run, and make the HTML and XML reports."""
-    import coverage
-    os.environ['COVERAGE_HOME'] = os.getcwd()
-    os.environ['COVERAGE_METAFILE'] = os.path.abspath(".metacov")
+    import coverage5 as coverage
+
+    os.environ["COVERAGE_HOME"] = os.getcwd()
+    os.environ["COVERAGE_METAFILE"] = os.path.abspath(".metacov")
     cov = coverage.Coverage(config_file="metacov.ini")
     cov.load()
     cov.combine()
     cov.save()
-    show_contexts = bool(os.environ.get('COVERAGE_CONTEXT'))
+    show_contexts = bool(os.environ.get("COVERAGE_CONTEXT"))
     cov.html_report(show_contexts=show_contexts)
     cov.xml_report()
 
@@ -202,23 +205,25 @@ def do_zip_mods():
     zf.write("tests/covmodzip1.py", "covmodzip1.py")
 
     # The others will be various encodings.
-    source = textwrap.dedent(u"""\
+    source = textwrap.dedent(
+        u"""\
         # coding: {encoding}
         text = u"{text}"
         ords = {ords}
         assert [ord(c) for c in text] == ords
         print(u"All OK with {encoding}")
-        """)
+        """
+    )
     # These encodings should match the list in tests/test_python.py
     details = [
-        (u'utf8', u'ⓗⓔⓛⓛⓞ, ⓦⓞⓡⓛⓓ'),
-        (u'gb2312', u'你好，世界'),
-        (u'hebrew', u'שלום, עולם'),
-        (u'shift_jis', u'こんにちは世界'),
-        (u'cp1252', u'“hi”'),
+        (u"utf8", u"ⓗⓔⓛⓛⓞ, ⓦⓞⓡⓛⓓ"),
+        (u"gb2312", u"你好，世界"),
+        (u"hebrew", u"שלום, עולם"),
+        (u"shift_jis", u"こんにちは世界"),
+        (u"cp1252", u"“hi”"),
     ]
     for encoding, text in details:
-        filename = 'encoded_{}.py'.format(encoding)
+        filename = "encoded_{}.py".format(encoding)
         ords = [ord(c) for c in text]
         source_text = source.format(encoding=encoding, text=text, ords=ords)
         zf.writestr(filename, source_text.encode(encoding))
@@ -226,7 +231,7 @@ def do_zip_mods():
     zf.close()
 
     zf = zipfile.ZipFile("tests/covmain.zip", "w")
-    zf.write("coverage/__main__.py", "__main__.py")
+    zf.write("coverage5/__main__.py", "__main__.py")
     zf.close()
 
 
@@ -237,6 +242,7 @@ def do_install_egg():
     os.chdir("tests/eggsrc")
     with ignore_warnings():
         import distutils.core
+
         distutils.core.run_setup("setup.py", ["--quiet", "bdist_egg"])
         egg = glob.glob("dist/*.egg")[0]
         distutils.core.run_setup(
@@ -249,13 +255,15 @@ def do_check_eol():
     """Check files for incorrect newlines and trailing whitespace."""
 
     ignore_dirs = [
-        '.svn', '.hg', '.git',
-        '.tox*',
-        '*.egg-info',
-        '_build',
-        '_spell',
-        'tmp',
-        'help',
+        ".svn",
+        ".hg",
+        ".git",
+        ".tox*",
+        "*.egg-info",
+        "_build",
+        "_spell",
+        "tmp",
+        "help",
     ]
     checked = set()
 
@@ -276,7 +284,7 @@ def do_check_eol():
                 if trail_white:
                     line = line[:-1]
                     if not crlf:
-                        line = line.rstrip(b'\r')
+                        line = line.rstrip(b"\r")
                     if line.rstrip() != line:
                         print("%s@%d: trailing whitespace found" % (fname, n))
                         return
@@ -301,9 +309,9 @@ def do_check_eol():
                 for dir_name in ignored:
                     dirs.remove(dir_name)
 
-    check_files("coverage", ["*.py"])
-    check_files("coverage/ctracer", ["*.c", "*.h"])
-    check_files("coverage/htmlfiles", ["*.html", "*.scss", "*.css", "*.js"])
+    check_files("coverage5", ["*.py"])
+    check_files("coverage5/ctracer", ["*.c", "*.h"])
+    check_files("coverage5/htmlfiles", ["*.html", "*.scss", "*.css", "*.js"])
     check_files("tests", ["*.py"])
     check_files("tests", ["*,cover"], trail_white=False)
     check_files("tests/js", ["*.js", "*.html"])
@@ -324,7 +332,7 @@ def print_banner(label):
 
     version = platform.python_version()
 
-    if '__pypy__' in sys.builtin_module_names:
+    if "__pypy__" in sys.builtin_module_names:
         version += " (pypy %s)" % ".".join(str(v) for v in sys.pypy_version_info)
 
     try:
@@ -333,7 +341,7 @@ def print_banner(label):
         # On Windows having a python executable on a different drive
         # than the sources cannot be relative.
         which_python = sys.executable
-    print('=== %s %s %s (%s) ===' % (impl, version, label, which_python))
+    print("=== %s %s %s (%s) ===" % (impl, version, label, which_python))
     sys.stdout.flush()
 
 
@@ -342,7 +350,7 @@ def do_help():
     items = list(globals().items())
     items.sort()
     for name, value in items:
-        if name.startswith('do_'):
+        if name.startswith("do_"):
             print("%-20s%s" % (name[3:], value.__doc__))
 
 
@@ -373,7 +381,7 @@ def main(args):
     """
     while args:
         verb = args.pop(0)
-        handler = globals().get('do_'+verb)
+        handler = globals().get("do_" + verb)
         if handler is None:
             print("*** No handler for %r" % verb)
             return 1
@@ -393,5 +401,5 @@ def main(args):
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

@@ -7,11 +7,10 @@ import os.path
 import re
 import textwrap
 
-from coverage import env
-from coverage.phystokens import source_token_lines, source_encoding
-from coverage.phystokens import neuter_encoding_declaration, compile_unicode
-from coverage.python import get_python_source
-
+from coverage5 import env
+from coverage5.phystokens import neuter_encoding_declaration, compile_unicode
+from coverage5.phystokens import source_token_lines, source_encoding
+from coverage5.python import get_python_source
 from tests.coveragetest import CoverageTest, TESTS_DIR
 
 
@@ -23,11 +22,26 @@ def foo():
 """
 
 SIMPLE_TOKENS = [
-    [('com', "# yay!")],
-    [('key', 'def'), ('ws', ' '), ('nam', 'foo'), ('op', '('), ('op', ')'), ('op', ':')],
-    [('ws', '  '), ('nam', 'say'), ('op', '('),
-        ('str', "'two = %d'"), ('ws', ' '), ('op', '%'),
-        ('ws', ' '), ('num', '2'), ('op', ')')],
+    [("com", "# yay!")],
+    [
+        ("key", "def"),
+        ("ws", " "),
+        ("nam", "foo"),
+        ("op", "("),
+        ("op", ")"),
+        ("op", ":"),
+    ],
+    [
+        ("ws", "  "),
+        ("nam", "say"),
+        ("op", "("),
+        ("str", "'two = %d'"),
+        ("ws", " "),
+        ("op", "%"),
+        ("ws", " "),
+        ("num", "2"),
+        ("op", ")"),
+    ],
 ]
 
 # Mixed-whitespace program, and its token stream.
@@ -38,9 +52,16 @@ def hello():
 """
 
 MIXED_WS_TOKENS = [
-    [('key', 'def'), ('ws', ' '), ('nam', 'hello'), ('op', '('), ('op', ')'), ('op', ':')],
-    [('ws', '        '), ('nam', 'a'), ('op', '='), ('str', '"Hello world!"')],
-    [('ws', '        '), ('nam', 'b'), ('op', '='), ('str', '"indented"')],
+    [
+        ("key", "def"),
+        ("ws", " "),
+        ("nam", "hello"),
+        ("op", "("),
+        ("op", ")"),
+        ("op", ":"),
+    ],
+    [("ws", "        "), ("nam", "a"), ("op", "="), ("str", '"Hello world!"')],
+    [("ws", "        "), ("nam", "b"), ("op", "="), ("str", '"indented"')],
 ]
 
 # https://github.com/nedbat/coveragepy/issues/822
@@ -50,6 +71,7 @@ array = [ 1,2,3,4,       # 4 numbers \\
           5,6,7 ]        # 3 numbers
 print( "Message 2" )
 """
+
 
 class PhysTokensTest(CoverageTest):
     """Tests for coverage.py's improved tokenizer."""
@@ -64,7 +86,7 @@ class PhysTokensTest(CoverageTest):
             tokenized += text + "\n"
         # source_token_lines doesn't preserve trailing spaces, so trim all that
         # before comparing.
-        source = source.replace('\r\n', '\n')
+        source = source.replace("\r\n", "\n")
         source = re.sub(r"(?m)[ \t]+$", "", source)
         tokenized = re.sub(r"(?m)[ \t]+$", "", tokenized)
         self.assertMultiLineEqual(source, tokenized)
@@ -121,6 +143,7 @@ ENCODING_DECLARATION_SOURCES = [
     (2, b"# -*-  coding:cp850 -*-\n# vim: fileencoding=cp850\n", "cp850"),
 ]
 
+
 class SourceEncodingTest(CoverageTest):
     """Tests of source_encoding() for detecting encodings."""
 
@@ -129,18 +152,16 @@ class SourceEncodingTest(CoverageTest):
     def test_detect_source_encoding(self):
         for _, source, expected in ENCODING_DECLARATION_SOURCES:
             self.assertEqual(
-                source_encoding(source),
-                expected,
-                "Wrong encoding in %r" % source
+                source_encoding(source), expected, "Wrong encoding in %r" % source
             )
 
     def test_detect_source_encoding_not_in_comment(self):
-        if env.PYPY3:           # pragma: no metacov
+        if env.PYPY3:  # pragma: no metacov
             # PyPy3 gets this case wrong. Not sure what I can do about it,
             # so skip the test.
             self.skipTest("PyPy3 is wrong about non-comment encoding. Skip it.")
         # Should not detect anything here
-        source = b'def parse(src, encoding=None):\n    pass'
+        source = b"def parse(src, encoding=None):\n    pass"
         self.assertEqual(source_encoding(source), DEF_ENCODING)
 
     def test_dont_detect_source_encoding_on_third_line(self):
@@ -155,11 +176,11 @@ class SourceEncodingTest(CoverageTest):
     def test_bom(self):
         # A BOM means utf-8.
         source = b"\xEF\xBB\xBFtext = 'hello'\n"
-        self.assertEqual(source_encoding(source), 'utf-8-sig')
+        self.assertEqual(source_encoding(source), "utf-8-sig")
 
     def test_bom_with_encoding(self):
         source = b"\xEF\xBB\xBF# coding: utf-8\ntext = 'hello'\n"
-        self.assertEqual(source_encoding(source), 'utf-8-sig')
+        self.assertEqual(source_encoding(source), "utf-8-sig")
 
     def test_bom_is_wrong(self):
         # A BOM with an explicit non-utf8 encoding is an error.
@@ -190,7 +211,8 @@ class NeuterEncodingDeclarationTest(CoverageTest):
 
             # Only one of the lines should be different.
             lines_different = sum(
-                int(nline != sline) for nline, sline in zip(neutered_lines, source_lines)
+                int(nline != sline)
+                for nline, sline in zip(neutered_lines, source_lines)
             )
             self.assertEqual(lines_diff_expected, lines_different)
 
@@ -199,34 +221,42 @@ class NeuterEncodingDeclarationTest(CoverageTest):
             self.assertEqual(
                 source_encoding(neutered),
                 DEF_ENCODING,
-                "Wrong encoding in %r" % neutered
+                "Wrong encoding in %r" % neutered,
             )
 
     def test_two_encoding_declarations(self):
-        input_src = textwrap.dedent(u"""\
+        input_src = textwrap.dedent(
+            u"""\
             # -*- coding: ascii -*-
             # -*- coding: utf-8 -*-
             # -*- coding: utf-16 -*-
-            """)
-        expected_src = textwrap.dedent(u"""\
+            """
+        )
+        expected_src = textwrap.dedent(
+            u"""\
             # (deleted declaration) -*-
             # (deleted declaration) -*-
             # -*- coding: utf-16 -*-
-            """)
+            """
+        )
         output_src = neuter_encoding_declaration(input_src)
         self.assertEqual(expected_src, output_src)
 
     def test_one_encoding_declaration(self):
-        input_src = textwrap.dedent(u"""\
+        input_src = textwrap.dedent(
+            u"""\
             # -*- coding: utf-16 -*-
             # Just a comment.
             # -*- coding: ascii -*-
-            """)
-        expected_src = textwrap.dedent(u"""\
+            """
+        )
+        expected_src = textwrap.dedent(
+            u"""\
             # (deleted declaration) -*-
             # Just a comment.
             # -*- coding: ascii -*-
-            """)
+            """
+        )
         output_src = neuter_encoding_declaration(input_src)
         self.assertEqual(expected_src, output_src)
 
@@ -239,7 +269,9 @@ class Bug529Test(CoverageTest):
         # file which contained code in multi-line strings, all with coding
         # declarations. The neutering of the file also changed the multi-line
         # strings, which it shouldn't have.
-        self.make_file("the_test.py", '''\
+        self.make_file(
+            "the_test.py",
+            '''\
             # -*- coding: utf-8 -*-
             import unittest
             class Bug529Test(unittest.TestCase):
@@ -256,7 +288,8 @@ class Bug529Test(CoverageTest):
 
             if __name__ == "__main__":
                 unittest.main()
-            ''')
+            ''',
+        )
         status, out = self.run_command_status("coverage run the_test.py")
         self.assertEqual(status, 0)
         self.assertIn("OK", out)
@@ -276,7 +309,7 @@ class CompileUnicodeTest(CoverageTest):
         code = compile_unicode(source, "<string>", "exec")
         globs = {}
         exec(code, globs)
-        self.assertEqual(globs['a'], 42)
+        self.assertEqual(globs["a"], 42)
 
     def test_cp1252(self):
         uni = u"""# coding: cp1252\n# \u201C curly \u201D\n"""
