@@ -10,7 +10,7 @@ This module is run automatically by pytest, to define and enable fixtures.
 import pytest
 import warnings
 
-from coverage import env
+from coverage4 import env
 
 
 @pytest.fixture(autouse=True)

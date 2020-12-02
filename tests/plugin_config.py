@@ -3,7 +3,7 @@
 
 """A configuring plugin for test_plugins.py to import."""
 
-import coverage
+import coverage4 as coverage
 
 
 class Plugin(coverage.CoveragePlugin):

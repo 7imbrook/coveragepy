@@ -5,7 +5,7 @@
 
 import os.path
 
-import coverage
+import coverage4 as coverage
 
 
 class Plugin(coverage.CoveragePlugin):

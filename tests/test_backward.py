@@ -3,8 +3,8 @@
 
 """Tests that our version shims in backward.py are working."""
 
-from coverage.backunittest import TestCase
-from coverage.backward import iitems, binary_bytes, bytes_to_ints
+from coverage4.backunittest import TestCase
+from coverage4.backward import iitems, binary_bytes, bytes_to_ints
 
 
 class BackwardTest(TestCase):

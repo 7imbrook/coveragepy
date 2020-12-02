@@ -6,8 +6,8 @@
 
 import mock
 
-import coverage
-from coverage.misc import CoverageException
+import coverage4 as coverage
+from coverage4.misc import CoverageException
 
 from tests.coveragetest import CoverageTest, UsingModulesMixin
 

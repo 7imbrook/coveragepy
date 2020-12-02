@@ -10,14 +10,14 @@ import os.path
 import py_compile
 import re
 
-import coverage
-from coverage import env
-from coverage.backward import StringIO
-from coverage.config import CoverageConfig
-from coverage.control import Coverage
-from coverage.data import CoverageData
-from coverage.misc import CoverageException, output_encoding
-from coverage.summary import SummaryReporter
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.backward import StringIO
+from coverage4.config import CoverageConfig
+from coverage4.control import Coverage
+from coverage4.data import CoverageData
+from coverage4.misc import CoverageException, output_encoding
+from coverage4.summary import SummaryReporter
 
 from tests.coveragetest import CoverageTest, TESTS_DIR, UsingModulesMixin
 

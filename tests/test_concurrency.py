@@ -11,10 +11,10 @@ import time
 
 from flaky import flaky
 
-import coverage
-from coverage import env
-from coverage.backward import import_local_file
-from coverage.files import abs_file
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.backward import import_local_file
+from coverage4.files import abs_file
 
 from tests.coveragetest import CoverageTest
 

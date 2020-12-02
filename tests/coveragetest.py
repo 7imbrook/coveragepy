@@ -18,13 +18,13 @@ from unittest_mixins import (
     DelayedAssertionMixin,
 )
 
-import coverage
-from coverage import env
-from coverage.backunittest import TestCase, unittest
-from coverage.backward import StringIO, import_local_file, string_class, shlex_quote
-from coverage.cmdline import CoverageScript
-from coverage.debug import _TEST_NAME_FILE
-from coverage.misc import StopEverything
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.backunittest import TestCase, unittest
+from coverage4.backward import StringIO, import_local_file, string_class, shlex_quote
+from coverage4.cmdline import CoverageScript
+from coverage4.debug import _TEST_NAME_FILE
+from coverage4.misc import StopEverything
 
 from tests.helpers import run_command, SuperModuleCleaner
 
@@ -375,7 +375,7 @@ class CoverageTest(
         ret_actual = command_line(args, _covpkg=_covpkg)
         self.assertEqual(ret_actual, ret)
 
-    coverage_command = "coverage"
+    coverage_command = "coverage4"
 
     def run_command(self, cmd):
         """Run the command-line `cmd` in a sub-process.
@@ -406,7 +406,7 @@ class CoverageTest(
         * "python" is replaced with the command name of the current
             Python interpreter.
 
-        * "coverage" is replaced with the command name for the main
+        * "coverage4" is replaced with the command name for the main
             Coverage.py program.
 
         Returns a pair: the process' exit status and its stdout/stderr text,
@@ -414,7 +414,7 @@ class CoverageTest(
         `self.last_command_output`.
 
         """
-        # Make sure "python" and "coverage" mean specifically what we want
+        # Make sure "python" and "coverage4" mean specifically what we want
         # them to mean.
         split_commandline = cmd.split()
         command_name = split_commandline[0]
@@ -428,12 +428,12 @@ class CoverageTest(
             # 2 executable instead if you don't use the executable's basename.
             command_words = [os.path.basename(sys.executable)]
 
-        elif command_name == "coverage":
+        elif command_name == "coverage4":
             if env.JYTHON:                  # pragma: only jython
                 # Jython can't do reporting, so let's skip the test now.
                 if command_args and command_args[0] in ('report', 'html', 'xml', 'annotate'):
                     self.skipTest("Can't run reporting commands in Jython")
-                # Jython can't run "coverage" as a command because the shebang
+                # Jython can't run "coverage4" as a command because the shebang
                 # refers to another shebang'd Python script. So run them as
                 # modules.
                 command_words = "jython -m coverage".split()

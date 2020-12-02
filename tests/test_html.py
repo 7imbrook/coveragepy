@@ -12,10 +12,10 @@ import os.path
 import re
 import sys
 
-import coverage
-import coverage.files
-import coverage.html
-from coverage.misc import CoverageException, NotPython, NoSource
+import coverage4 as coverage
+import coverage4 as coverage.files
+import coverage4 as coverage.html
+from coverage4.misc import CoverageException, NotPython, NoSource
 
 from tests.coveragetest import CoverageTest
 from tests.goldtest import CoverageGoldTest

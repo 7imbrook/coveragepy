@@ -8,8 +8,8 @@ import sys
 
 import pytest
 
-from coverage import env
-from coverage.python import get_zip_bytes, source_for_file
+from coverage4 import env
+from coverage4.python import get_zip_bytes, source_for_file
 
 from tests.coveragetest import CoverageTest
 

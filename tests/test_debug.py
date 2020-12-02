@@ -7,9 +7,9 @@ import os
 
 import pytest
 
-import coverage
-from coverage.backward import StringIO
-from coverage.debug import filter_text, info_formatter, info_header, short_id, short_stack
+import coverage4 as coverage
+from coverage4.backward import StringIO
+from coverage4.debug import filter_text, info_formatter, info_header, short_id, short_stack
 
 from tests.coveragetest import CoverageTest
 from tests.helpers import re_lines

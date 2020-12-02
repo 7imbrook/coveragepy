@@ -9,10 +9,10 @@ import os
 import os.path
 import re
 
-from coverage import env
-from coverage.backward import binary_bytes
-from coverage.execfile import run_python_file, run_python_module
-from coverage.misc import NoCode, NoSource
+from coverage4 import env
+from coverage4.backward import binary_bytes
+from coverage4.execfile import run_python_file, run_python_module
+from coverage4.misc import NoCode, NoSource
 
 from tests.coveragetest import CoverageTest, TESTS_DIR, UsingModulesMixin
 

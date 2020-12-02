@@ -9,11 +9,11 @@ import sys
 import textwrap
 import warnings
 
-import coverage
-from coverage import env
-from coverage.backward import StringIO, import_local_file
-from coverage.misc import CoverageException
-from coverage.report import Reporter
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.backward import StringIO, import_local_file
+from coverage4.misc import CoverageException
+from coverage4.report import Reporter
 
 from tests.coveragetest import CoverageTest, CoverageTestMethodsMixin, TESTS_DIR, UsingModulesMixin
 

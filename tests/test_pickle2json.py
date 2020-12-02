@@ -3,9 +3,9 @@
 
 """Tests for coverage.pickle2json"""
 
-from coverage.backward import pickle, iitems
-from coverage.data import CoverageData
-from coverage.pickle2json import pickle2json
+from coverage4.backward import pickle, iitems
+from coverage4.data import CoverageData
+from coverage4.pickle2json import pickle2json
 
 from tests.coveragetest import CoverageTest
 from tests.test_data import DataTestHelpers, LINES_1, ARCS_3

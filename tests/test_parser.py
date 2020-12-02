@@ -7,9 +7,9 @@ import textwrap
 
 from tests.coveragetest import CoverageTest
 
-from coverage import env
-from coverage.misc import NotPython
-from coverage.parser import PythonParser
+from coverage4 import env
+from coverage4.misc import NotPython
+from coverage4.parser import PythonParser
 
 
 class PythonParserTest(CoverageTest):

@@ -5,9 +5,9 @@
 
 from tests.coveragetest import CoverageTest
 
-import coverage
-from coverage import env
-from coverage.files import abs_file
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.files import abs_file
 
 
 class SimpleArcTest(CoverageTest):

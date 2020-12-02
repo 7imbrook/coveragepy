@@ -11,11 +11,11 @@ import re
 
 import mock
 
-from coverage.backward import StringIO
-from coverage.data import CoverageData, CoverageDataFiles, debug_main, canonicalize_json_data
-from coverage.debug import DebugControlString
-from coverage.files import PathAliases, canonical_filename
-from coverage.misc import CoverageException
+from coverage4.backward import StringIO
+from coverage4.data import CoverageData, CoverageDataFiles, debug_main, canonicalize_json_data
+from coverage4.debug import DebugControlString
+from coverage4.files import PathAliases, canonical_filename
+from coverage4.misc import CoverageException
 
 from tests.coveragetest import CoverageTest
 

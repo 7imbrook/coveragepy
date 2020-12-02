@@ -6,7 +6,7 @@
 import runpy
 import os
 
-PKG = 'coverage'
+PKG = 'coverage4'
 
 try:
     run_globals = runpy.run_module(PKG, run_name='__main__', alter_sys=True)

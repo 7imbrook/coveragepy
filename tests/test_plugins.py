@@ -5,13 +5,13 @@
 
 import os.path
 
-import coverage
-from coverage import env
-from coverage.backward import StringIO
-from coverage.control import Plugins
-from coverage.misc import CoverageException
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.backward import StringIO
+from coverage4.control import Plugins
+from coverage4.misc import CoverageException
 
-import coverage.plugin
+import coverage4 as coverage.plugin
 
 from tests.coveragetest import CoverageTest
 from tests.helpers import CheckUniqueFilenames
@@ -39,7 +39,7 @@ class LoadPluginsTest(CoverageTest):
 
     def test_implicit_boolean(self):
         self.make_file("plugin1.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
 
             class Plugin(CoveragePlugin):
                 pass
@@ -57,7 +57,7 @@ class LoadPluginsTest(CoverageTest):
 
     def test_importing_and_configuring(self):
         self.make_file("plugin1.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
 
             class Plugin(CoveragePlugin):
                 def __init__(self, options):
@@ -78,7 +78,7 @@ class LoadPluginsTest(CoverageTest):
 
     def test_importing_and_configuring_more_than_one(self):
         self.make_file("plugin1.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
 
             class Plugin(CoveragePlugin):
                 def __init__(self, options):
@@ -89,7 +89,7 @@ class LoadPluginsTest(CoverageTest):
                 reg.add_file_tracer(Plugin(options))
             """)
         self.make_file("plugin2.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
 
             class Plugin(CoveragePlugin):
                 def __init__(self, options):
@@ -123,7 +123,7 @@ class LoadPluginsTest(CoverageTest):
 
     def test_plugin_must_define_coverage_init(self):
         self.make_file("no_plugin.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
             Nothing = 0
             """)
         msg_pat = "Plugin module 'no_plugin' didn't define a coverage_init function"
@@ -137,7 +137,7 @@ class PluginTest(CoverageTest):
     def test_plugin_imported(self):
         # Prove that a plugin will be imported.
         self.make_file("my_plugin.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
             class Plugin(CoveragePlugin):
                 pass
             def coverage_init(reg, options):
@@ -176,7 +176,7 @@ class PluginTest(CoverageTest):
 
     def test_plugin_sys_info(self):
         self.make_file("plugin_sys_info.py", """\
-            import coverage
+            import coverage4 as coverage
 
             class Plugin(coverage.CoveragePlugin):
                 def sys_info(self):
@@ -206,7 +206,7 @@ class PluginTest(CoverageTest):
 
     def test_plugin_with_no_sys_info(self):
         self.make_file("plugin_no_sys_info.py", """\
-            import coverage
+            import coverage4 as coverage
 
             class Plugin(coverage.CoveragePlugin):
                 pass
@@ -231,7 +231,7 @@ class PluginTest(CoverageTest):
 
     def test_local_files_are_importable(self):
         self.make_file("importing_plugin.py", """\
-            from coverage import CoveragePlugin
+            from coverage4 import CoveragePlugin
             import local_module
             class MyPlugin(CoveragePlugin):
                 pass
@@ -467,7 +467,7 @@ class GoodFileTracerTest(FileTracerTest):
             # A plugin that claims all the odd lines are executed, and none of
             # the even lines, and then punts reporting off to the built-in
             # Python reporting.
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.CoveragePlugin):
                 def file_tracer(self, filename):
                     return OddTracer(filename)
@@ -515,7 +515,7 @@ class GoodFileTracerTest(FileTracerTest):
     def test_find_unexecuted(self):
         self.make_file("unexecuted_plugin.py", """\
             import os
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.CoveragePlugin):
                 def file_tracer(self, filename):
                     if filename.endswith("foo.py"):
@@ -652,7 +652,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_file_tracer_has_inherited_sourcefilename_method(self):
         self.make_file("bad_plugin.py", """\
-            import coverage
+            import coverage4 as coverage
             class Plugin(coverage.CoveragePlugin):
                 def file_tracer(self, filename):
                     # Just grab everything.
@@ -671,7 +671,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_plugin_has_inherited_filereporter_method(self):
         self.make_file("bad_plugin.py", """\
-            import coverage
+            import coverage4 as coverage
             class Plugin(coverage.CoveragePlugin):
                 def file_tracer(self, filename):
                     # Just grab everything.
@@ -691,7 +691,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_file_tracer_fails(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     17/0 # Oh noes!
@@ -703,7 +703,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_file_tracer_returns_wrong(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     return 3.14159
@@ -717,7 +717,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_has_dynamic_source_filename_fails(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     return BadFileTracer()
@@ -733,7 +733,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_source_filename_fails(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     return BadFileTracer()
@@ -749,7 +749,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_source_filename_returns_wrong(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     return BadFileTracer()
@@ -773,7 +773,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_dynamic_source_filename_fails(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     if filename.endswith("other.py"):
@@ -792,7 +792,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_line_number_range_returns_non_tuple(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     if filename.endswith("other.py"):
@@ -814,7 +814,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_line_number_range_returns_triple(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     if filename.endswith("other.py"):
@@ -836,7 +836,7 @@ class BadFileTracerTest(FileTracerTest):
 
     def test_line_number_range_returns_pair_of_strings(self):
         self.make_file("bad_plugin.py", """\
-            import coverage.plugin
+            import coverage4 as coverage.plugin
             class Plugin(coverage.plugin.CoveragePlugin):
                 def file_tracer(self, filename):
                     if filename.endswith("other.py"):

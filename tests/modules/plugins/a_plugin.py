@@ -1,6 +1,6 @@
 """A plugin for tests to reference."""
 
-from coverage import CoveragePlugin
+from coverage4 import CoveragePlugin
 
 
 class Plugin(CoveragePlugin):

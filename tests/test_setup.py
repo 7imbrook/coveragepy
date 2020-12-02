@@ -5,7 +5,7 @@
 
 import sys
 
-import coverage
+import coverage4 as coverage
 
 from tests.coveragetest import CoverageTest
 

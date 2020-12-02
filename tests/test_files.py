@@ -9,13 +9,13 @@ import os.path
 
 import pytest
 
-from coverage import files
-from coverage.files import (
+from coverage4 import files
+from coverage4.files import (
     TreeMatcher, FnmatchMatcher, ModuleMatcher, PathAliases,
     find_python_files, abs_file, actual_path, flat_rootname, fnmatches_to_regex,
 )
-from coverage.misc import CoverageException
-from coverage import env
+from coverage4.misc import CoverageException
+from coverage4 import env
 
 from tests.coveragetest import CoverageTest
 

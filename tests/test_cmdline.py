@@ -12,12 +12,12 @@ import textwrap
 import mock
 import pytest
 
-import coverage
-import coverage.cmdline
-from coverage import env
-from coverage.config import CoverageConfig
-from coverage.data import CoverageData, CoverageDataFiles
-from coverage.misc import ExceptionDuringRun
+import coverage4 as coverage
+import coverage4 as coverage.cmdline
+from coverage4 import env
+from coverage4.config import CoverageConfig
+from coverage4.data import CoverageData, CoverageDataFiles
+from coverage4.misc import ExceptionDuringRun
 
 from tests.coveragetest import CoverageTest, OK, ERR, command_line
 

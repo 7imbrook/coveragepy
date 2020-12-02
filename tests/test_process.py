@@ -14,9 +14,9 @@ import textwrap
 
 import pytest
 
-import coverage
-from coverage import env, CoverageData
-from coverage.misc import output_encoding
+import coverage4 as coverage
+from coverage4 import env, CoverageData
+from coverage4.misc import output_encoding
 
 from tests.coveragetest import CoverageTest
 from tests.helpers import re_lines
@@ -430,7 +430,7 @@ class ProcessTest(CoverageTest):
         # But also make sure that the output is what we expect.
         self.assertIn('File "throw.py", line 5, in f2', out)
         self.assertIn('raise Exception("hey!")', out)
-        self.assertNotIn('coverage', out)
+        self.assertNotIn('coverage4', out)
         self.assertEqual(status, 1)
 
     def test_code_exits(self):
@@ -663,7 +663,7 @@ class ProcessTest(CoverageTest):
         self.make_file("allok.py", """\
             import warnings
             warnings.simplefilter('default')
-            import coverage
+            import coverage4 as coverage
             print("No warnings!")
             """)
 
@@ -681,7 +681,7 @@ class ProcessTest(CoverageTest):
                 pass
             """)
         self.make_file("run_twice.py", """\
-            import coverage
+            import coverage4 as coverage
 
             for _ in [1, 2]:
                 inst = coverage.Coverage(source=['foo'])
@@ -948,7 +948,7 @@ class AliasedCommandTest(CoverageTest):
 
     def test_aliases_used_in_messages(self):
         cmds = [
-            "coverage",
+            "coverage4",
             "coverage%d" % sys.version_info[0],
             "coverage-%d.%d" % sys.version_info[:2],
         ]
@@ -976,7 +976,7 @@ class PydocTest(CoverageTest):
             self.assertIn(line.strip(), out)
 
     def test_pydoc_coverage(self):
-        self.assert_pydoc_ok("coverage", coverage)
+        self.assert_pydoc_ok("coverage4", coverage)
 
     def test_pydoc_coverage_coverage(self):
         self.assert_pydoc_ok("coverage.Coverage", coverage.Coverage)
@@ -1159,7 +1159,7 @@ class ProcessCoverageMixin(object):
 
         # Create the .pth file.
         self.assertTrue(PTH_DIR)
-        pth_contents = "import coverage; coverage.process_startup()\n"
+        pth_contents = "import coverage4 as coverage; coverage.process_startup()\n"
         pth_path = os.path.join(PTH_DIR, "subcover_{0}.pth".format(WORKER))
         with open(pth_path, "w") as pth:
             pth.write(pth_contents)

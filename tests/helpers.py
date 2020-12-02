@@ -13,9 +13,9 @@ import sys
 
 from unittest_mixins import ModuleCleaner
 
-from coverage import env
-from coverage.backward import invalidate_import_caches, unicode_class
-from coverage.misc import output_encoding
+from coverage4 import env
+from coverage4.backward import invalidate_import_caches, unicode_class
+from coverage4.misc import output_encoding
 
 
 def run_command(cmd):

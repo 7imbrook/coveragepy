@@ -41,7 +41,7 @@ Topic :: Software Development :: Quality Assurance
 Topic :: Software Development :: Testing
 """
 
-cov_ver_py = os.path.join(os.path.split(__file__)[0], "coverage/version.py")
+cov_ver_py = os.path.join(os.path.split(__file__)[0], "coverage4/version.py")
 with open(cov_ver_py) as version_file:
     # __doc__ will be overwritten by version.py.
     doc = __doc__
@@ -72,27 +72,27 @@ classifier_list.append("Development Status :: " + devstat)
 # Create the keyword arguments for setup()
 
 setup_args = dict(
-    name='coverage',
+    name='coverage4',
     version=__version__,
 
     packages=[
-        'coverage',
+        'coverage4',
     ],
 
     package_data={
-        'coverage': [
+        'coverage4': [
             'htmlfiles/*.*',
             'fullcoverage/*.*',
         ]
     },
 
     entry_points={
-        # Install a script as "coverage", and as "coverage[23]", and as
+        # Install a script as "coverage4", and as "coverage[23]", and as
         # "coverage-2.7" (or whatever).
         'console_scripts': [
-            'coverage = coverage.cmdline:main',
-            'coverage%d = coverage.cmdline:main' % sys.version_info[:1],
-            'coverage-%d.%d = coverage.cmdline:main' % sys.version_info[:2],
+            'coverage4 = coverage.cmdline:main',
+            'coverage4%d = coverage.cmdline:main' % sys.version_info[:1],
+            'coverage4-%d.%d = coverage.cmdline:main' % sys.version_info[:2],
         ],
     },
 
@@ -173,12 +173,12 @@ if compile_extension:
     setup_args.update(dict(
         ext_modules=[
             Extension(
-                "coverage.tracer",
+                "coverage4.tracer",
                 sources=[
-                    "coverage/ctracer/datastack.c",
-                    "coverage/ctracer/filedisp.c",
-                    "coverage/ctracer/module.c",
-                    "coverage/ctracer/tracer.c",
+                    "coverage4/ctracer/datastack.c",
+                    "coverage4/ctracer/filedisp.c",
+                    "coverage4/ctracer/module.c",
+                    "coverage4/ctracer/tracer.c",
                 ],
             ),
         ],

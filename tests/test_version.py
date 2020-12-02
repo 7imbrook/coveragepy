@@ -3,8 +3,8 @@
 
 """Tests of version.py."""
 
-import coverage
-from coverage.version import _make_url, _make_version
+import coverage4 as coverage
+from coverage4.version import _make_url, _make_version
 
 from tests.coveragetest import CoverageTest
 

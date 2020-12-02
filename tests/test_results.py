@@ -5,7 +5,7 @@
 
 import pytest
 
-from coverage.results import Numbers, should_fail_under
+from coverage4.results import Numbers, should_fail_under
 
 from tests.coveragetest import CoverageTest
 

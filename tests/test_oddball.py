@@ -8,10 +8,10 @@ import sys
 from flaky import flaky
 import pytest
 
-import coverage
-from coverage import env
-from coverage.backward import import_local_file
-from coverage.files import abs_file
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.backward import import_local_file
+from coverage4.files import abs_file
 
 from tests.coveragetest import CoverageTest
 from tests import osinfo
@@ -211,7 +211,7 @@ class MemoryFumblingTest(CoverageTest):
                     x = 2
             """)
         self.make_file("main.py", """\
-            import coverage
+            import coverage4 as coverage
             import sys
             from the_code import f
             for i in range(10000):

@@ -10,10 +10,10 @@ import sys
 
 import pytest
 
-import coverage
-from coverage.backunittest import TestCase, unittest
-from coverage.files import actual_path
-from coverage.misc import StopEverything
+import coverage4 as coverage
+from coverage4.backunittest import TestCase, unittest
+from coverage4.files import actual_path
+from coverage4.misc import StopEverything
 
 from tests.coveragetest import CoverageTest, convert_skip_exceptions
 from tests.helpers import CheckUniqueFilenames, re_lines, re_line

@@ -5,8 +5,8 @@
 
 import os
 
-from coverage.plugin import FileReporter
-from coverage.python import PythonFileReporter
+from coverage4.plugin import FileReporter
+from coverage4.python import PythonFileReporter
 
 from tests.coveragetest import CoverageTest, UsingModulesMixin
 

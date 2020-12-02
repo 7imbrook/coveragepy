@@ -18,9 +18,9 @@ from unittest_mixins import ModuleAwareMixin, SysPathAwareMixin, change_dir
 from tests.helpers import run_command
 from tests.backtest import execfile         # pylint: disable=redefined-builtin
 
-from coverage import env
-from coverage.backunittest import unittest
-from coverage.debug import _TEST_NAME_FILE
+from coverage4 import env
+from coverage4.backunittest import unittest
+from coverage4.debug import _TEST_NAME_FILE
 
 
 # Look for files that become tests.

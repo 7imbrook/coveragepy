@@ -5,8 +5,8 @@
 
 import pytest
 
-from coverage.misc import contract, dummy_decorator_with_args, file_be_gone
-from coverage.misc import format_lines, Hasher, one_of
+from coverage4.misc import contract, dummy_decorator_with_args, file_be_gone
+from coverage4.misc import format_lines, Hasher, one_of
 
 from tests.coveragetest import CoverageTest
 

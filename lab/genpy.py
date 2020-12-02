@@ -6,8 +6,8 @@ import random
 import re
 import sys
 
-import coverage
-from coverage.parser import PythonParser
+import coverage4 as coverage
+from coverage4.parser import PythonParser
 
 
 class PythonSpinner(object):

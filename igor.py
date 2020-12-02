@@ -53,7 +53,7 @@ def do_remove_extension():
         """.split()
 
     for pattern in so_patterns:
-        pattern = os.path.join("coverage", pattern)
+        pattern = os.path.join("coverage4", pattern)
         for filename in glob.glob(pattern):
             try:
                 os.remove(filename)
@@ -109,7 +109,7 @@ def run_tests_with_coverage(tracer, *runner_args):
     pth_dir = os.path.dirname(pytest.__file__)
     pth_path = os.path.join(pth_dir, "zzz_metacov.pth")
     with open(pth_path, "w") as pth_file:
-        pth_file.write("import coverage; coverage.process_startup()\n")
+        pth_file.write("import coverage4 as coverage; coverage.process_startup()\n")
 
     # Make names for the data files that keep all the test runs distinct.
     impl = platform.python_implementation().lower()
@@ -120,7 +120,7 @@ def run_tests_with_coverage(tracer, *runner_args):
 
     os.environ['COVERAGE_METAFILE'] = os.path.abspath(".metacov."+suffix)
 
-    import coverage
+    import coverage4 as coverage
     cov = coverage.Coverage(config_file="metacov.ini", data_suffix=False)
     # Cheap trick: the coverage.py code itself is excluded from measurement,
     # but if we clobber the cover_prefix in the coverage object, we can defeat
@@ -130,7 +130,7 @@ def run_tests_with_coverage(tracer, *runner_args):
     cov.start()
 
     try:
-        # Re-import coverage to get it coverage tested!  I don't understand all
+        # Re-import coverage4 as coverage to get it coverage tested!  I don't understand all
         # the mechanics here, but if I don't carry over the imported modules
         # (in covmods), then things go haywire (os == None, eventually).
         covmods = {}
@@ -138,11 +138,11 @@ def run_tests_with_coverage(tracer, *runner_args):
         # We have to make a list since we'll be deleting in the loop.
         modules = list(sys.modules.items())
         for name, mod in modules:
-            if name.startswith('coverage'):
+            if name.startswith('coverage4'):
                 if getattr(mod, '__file__', "??").startswith(covdir):
                     covmods[name] = mod
                     del sys.modules[name]
-        import coverage                         # pylint: disable=reimported
+        import coverage4 as coverage                         # pylint: disable=reimported
         sys.modules.update(covmods)
 
         # Run tests, with the arguments from our command line.
@@ -160,7 +160,7 @@ def run_tests_with_coverage(tracer, *runner_args):
 
 def do_combine_html():
     """Combine data from a meta-coverage run, and make the HTML and XML reports."""
-    import coverage
+    import coverage4 as coverage
     os.environ['COVERAGE_HOME'] = os.getcwd()
     os.environ['COVERAGE_METAFILE'] = os.path.abspath(".metacov")
     cov = coverage.Coverage(config_file="metacov.ini")
@@ -287,7 +287,7 @@ def do_check_eol():
                 for dir_name in ignored:
                     dirs.remove(dir_name)
 
-    check_files("coverage", ["*.py"])
+    check_files("coverage4", ["*.py"])
     check_files("coverage/ctracer", ["*.c", "*.h"])
     check_files("coverage/htmlfiles", ["*.html", "*.css", "*.js"])
     check_file("tests/farm/html/src/bom.py", crlf=False)

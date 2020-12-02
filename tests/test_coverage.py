@@ -4,9 +4,9 @@
 
 """Tests for coverage.py."""
 
-import coverage
-from coverage import env
-from coverage.misc import CoverageException
+import coverage4 as coverage
+from coverage4 import env
+from coverage4.misc import CoverageException
 
 from tests.coveragetest import CoverageTest
 

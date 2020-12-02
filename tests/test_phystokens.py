@@ -7,10 +7,10 @@ import os.path
 import re
 import textwrap
 
-from coverage import env
-from coverage.phystokens import source_token_lines, source_encoding
-from coverage.phystokens import neuter_encoding_declaration, compile_unicode
-from coverage.python import get_python_source
+from coverage4 import env
+from coverage4.phystokens import source_token_lines, source_encoding
+from coverage4.phystokens import neuter_encoding_declaration, compile_unicode
+from coverage4.python import get_python_source
 
 from tests.coveragetest import CoverageTest, TESTS_DIR
 

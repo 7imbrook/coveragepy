@@ -13,8 +13,8 @@ import time
 
 from unittest_mixins.mixins import make_file
 
-import coverage
-from coverage.backward import import_local_file
+import coverage4 as coverage
+from coverage4.backward import import_local_file
 
 from tests.helpers import SuperModuleCleaner
 

@@ -3,7 +3,7 @@
 
 """OS information for testing."""
 
-from coverage import env
+from coverage4 import env
 
 
 if env.WINDOWS:

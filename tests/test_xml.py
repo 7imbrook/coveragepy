@@ -2,15 +2,15 @@
 # Licensed under the Apache License: http://www.apache.org/licenses/LICENSE-2.0
 # For details: https://bitbucket.org/ned/coveragepy/src/default/NOTICE.txt
 
-"""Tests for XML reports from coverage.py."""
+"""Tests for XML reports from coverage4.py."""
 
 import os
 import os.path
 import re
 
-import coverage
-from coverage.backward import import_local_file
-from coverage.files import abs_file
+import coverage4 as coverage
+from coverage4.backward import import_local_file
+from coverage4.files import abs_file
 
 from tests.coveragetest import CoverageTest
 from tests.goldtest import CoverageGoldTest
@@ -67,7 +67,7 @@ class XmlTestHelpers(CoverageTest):
 
 
 class XmlReportTest(XmlTestHelpers, CoverageTest):
-    """Tests of the XML reports from coverage.py."""
+    """Tests of the XML reports from coverage4.py."""
 
     def test_default_file_placement(self):
         self.run_mycode()

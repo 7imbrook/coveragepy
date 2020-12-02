@@ -15,8 +15,8 @@ import textwrap
 
 import disgen
 
-from coverage.parser import PythonParser
-from coverage.python import get_python_source
+from coverage4.parser import PythonParser
+from coverage4.python import get_python_source
 
 opcode_counts = collections.Counter()
 

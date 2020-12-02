@@ -6,7 +6,7 @@
 
 import re
 
-from coverage.templite import Templite, TempliteSyntaxError, TempliteValueError
+from coverage4.templite import Templite, TempliteSyntaxError, TempliteValueError
 
 from tests.coveragetest import CoverageTest
 
